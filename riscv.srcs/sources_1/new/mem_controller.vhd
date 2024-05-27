@@ -30,7 +30,7 @@ begin
     -- Single 36kb BRAM for now. Can be expanded later.
     ins_mem : entity work.bram
     generic map (
-        INIT_FILE => "instructions.mem"
+        INIT_FILE => "instruction.mem"
     )
     port map (
         -- Port A: Load / Store Instructions

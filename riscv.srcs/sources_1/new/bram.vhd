@@ -61,9 +61,9 @@ begin
         RAM_EXTENSION_B => "NONE",
 
         -- READ_WIDTH_A/B, WRITE_WIDTH_A/B: Read/write width per port
-        READ_WIDTH_A => 32,
-        READ_WIDTH_B => 32,
-        WRITE_WIDTH_A => 32,
+        READ_WIDTH_A => 36,
+        READ_WIDTH_B => 36,
+        WRITE_WIDTH_A => 36,
         WRITE_WIDTH_B => 0,
 
         -- RSTREG_PRIORITY_A, RSTREG_PRIORITY_B: Reset or enable priority ("RSTREG" or "REGCE")
