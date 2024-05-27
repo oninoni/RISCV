@@ -5,10 +5,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity mem_controller is
-    Port ( 
+    Port (
         clk : in STD_LOGIC;
         res_n : in STD_LOGIC;
-        
+
         operation : in STD_LOGIC_VECTOR (6 downto 0);
 
         ram_wd : in STD_LOGIC_VECTOR (31 downto 0);
@@ -25,7 +25,7 @@ end mem_controller;
 -- Other RAM Mapped devices are added later.
 
 architecture Behavioral of mem_controller is
-        
+
 
 begin
 

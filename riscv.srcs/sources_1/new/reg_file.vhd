@@ -5,12 +5,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity reg_file is
-    Port ( 
+    Port (
         clk : in STD_LOGIC;
         res_n : in STD_LOGIC;
 
         opcode : in STD_LOGIC_VECTOR (6 downto 0);
-        
+
         rs1 : in STD_LOGIC_VECTOR (4 downto 0);
         rs2 : in STD_LOGIC_VECTOR (4 downto 0);
 

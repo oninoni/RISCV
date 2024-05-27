@@ -8,12 +8,12 @@ entity pc is
     Port (
         clk : in STD_LOGIC;
         res_n : in STD_LOGIC;
-    
+
         opcode : in STD_LOGIC_VECTOR (6 downto 0);
 
         pc : out STD_LOGIC_VECTOR (31 downto 0);
         pc_4 : out STD_LOGIC_VECTOR (31 downto 0);
-    
+
         branch : in STD_LOGIC;
         res : in STD_LOGIC_VECTOR (31 downto 0)
     );

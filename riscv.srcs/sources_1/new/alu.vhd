@@ -5,7 +5,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity alu is
-    Port ( 
+    Port (
         opcode : in STD_LOGIC_VECTOR (6 downto 0);
         funct3 : in STD_LOGIC_VECTOR (2 downto 0);
         funct7 : in STD_LOGIC_VECTOR (6 downto 0);
@@ -20,7 +20,7 @@ end alu;
 
 architecture Behavioral of alu is
 begin
-    
+
     -- RISC-V ALU
     -- Opcode: https://www.cs.sfu.ca/~ashriram/Courses/CS295/assets/notebooks/RISCV/RISCV_CARD.pdf
     process(all)
@@ -67,10 +67,10 @@ begin
             when others =>
                 res <= (others => '0');
             end case;
-            
+
         -- Reuse of ALU Adder for memory address operations
-        
-        when "0000011" => -- I-Type (Load, res = address)    
+
+        when "0000011" => -- I-Type (Load, res = address)
             res <= std_logic_vector(signed(rd1) + signed(imm));
         when "0100011" => -- S-Type (Store, res = address)
             res <= std_logic_vector(signed(rd1) + signed(imm));
@@ -84,7 +84,7 @@ begin
 
         when "0010111" => -- U-Type (AUIPC, res = imm)
             res <= std_logic_vector(signed(unsigned(pc)) + signed(imm));
- 
+
         when others =>
             res <= (others => '0');
         end case;

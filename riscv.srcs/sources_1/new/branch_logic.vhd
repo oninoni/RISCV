@@ -5,10 +5,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity branch_logic is
-    Port ( 
+    Port (
         opcode : in STD_LOGIC_VECTOR (6 downto 0);
         funct3 : in STD_LOGIC_VECTOR (2 downto 0);
-        
+
         rd1 : in STD_LOGIC_VECTOR (31 downto 0);
         rd2 : in STD_LOGIC_VECTOR (31 downto 0);
 
@@ -18,7 +18,7 @@ end branch_logic;
 
 architecture Behavioral of branch_logic is
 begin
-    process(all) 
+    process(all)
     begin
         if (opcode = "1100011") then
             case (funct3) is

@@ -5,7 +5,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity ins_decode is
-    Port ( 
+    Port (
         instruction : in STD_LOGIC_VECTOR (31 downto 0);
 
         opcode : out STD_LOGIC_VECTOR (6 downto 0);
@@ -15,7 +15,7 @@ entity ins_decode is
         rs1 : out STD_LOGIC_VECTOR (4 downto 0);
         rs2 : out STD_LOGIC_VECTOR (4 downto 0);
         rd : out STD_LOGIC_VECTOR (4 downto 0);
-        
+
         imm : out STD_LOGIC_VECTOR (31 downto 0);
     );
 end ins_decode;
@@ -24,7 +24,7 @@ architecture Behavioral of ins_decode is
 begin
 
     -- Simple Decoder
-    process(all) 
+    process(all)
     begin
         opcode <= instruction(6 downto 0);
         funct3 <= instruction(14 downto 12);
@@ -61,5 +61,5 @@ begin
             imm <= (others => '0');
         end case;
     end process;
-    
+
 end Behavioral;
