@@ -10,6 +10,7 @@ entity alu is
         funct3 : in STD_LOGIC_VECTOR (2 downto 0);
         funct7 : in STD_LOGIC_VECTOR (6 downto 0);
 
+        pc : in STD_LOGIC_VECTOR (31 downto 0);
         imm : in STD_LOGIC_VECTOR (31 downto 0);
 
         rd1 : in STD_LOGIC_VECTOR (31 downto 0);

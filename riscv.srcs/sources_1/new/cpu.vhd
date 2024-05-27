@@ -42,7 +42,7 @@ architecture Behavioral of cpu is
     signal instruction : std_logic_vector(31 downto 0);
 begin
     -- Instruction Decoder
-    ins_decode: entity ins_decode
+    ins_decode: entity work.ins_decode
     port map (
         instruction => instruction,
 
@@ -58,7 +58,7 @@ begin
     );
 
     -- Program Counter
-    pc: entity pc
+    pc: entity work.pc
     port map (
         clk => clk,
         res_n => res_n,
@@ -73,7 +73,7 @@ begin
     );
 
     -- Register File
-    reg_file: entity reg_file
+    reg_file: entity work.reg_file
     port map (
         clk => clk,
         res_n => res_n,
@@ -92,16 +92,17 @@ begin
         rd1 => rd1,
         rd2 => rd2,
 
-        ram_rd => ram_rd,
+        ram_rd => ram_rd
     );
 
     -- ALU
-    alu: entity alu
+    alu: entity work.alu
     port map (
         opcode => opcode,
         funct3 => funct3,
         funct7 => funct7,
 
+        pc => pc,
         imm => imm,
 
         rd1 => rd1,
@@ -110,7 +111,7 @@ begin
     );
 
     -- Branch Logic
-    branch_logic: entity branch_logic
+    branch_logic: entity work.branch_logic
     port map (
         opcode => opcode,
         funct3 => funct3,
@@ -122,7 +123,7 @@ begin
     );
 
     -- Memory Controller
-    mem_ctrl: entity mem_ctrl
+    mem_controller: entity work.mem_controller
     port map (
         clk => clk,
 
@@ -130,9 +131,9 @@ begin
 
         res => res,
         ram_wd => ram_wd,
-        ram_rd => ram_rd
+        ram_rd => ram_rd,
 
-        pc => pc
+        pc => pc,
         instruction => instruction
     );
 

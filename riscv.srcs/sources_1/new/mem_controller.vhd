@@ -28,7 +28,7 @@ architecture Behavioral of mem_controller is
     signal write_enable : std_logic := '0';
 begin
     -- Single 36kb BRAM for now. Can be expanded later.
-    ins_mem : entity bram
+    ins_mem : entity work.bram
     generic map (
         INIT_FILE => "instructions.mem"
     )
@@ -37,7 +37,7 @@ begin
         -- Executed on the falling edge of the clock
         A_clk => not clk,
         A_Enable => write_enable,
-        A_addr => res
+        A_addr => res,
 
         A_Write => ram_wd,
         A_Read => ram_rd,
