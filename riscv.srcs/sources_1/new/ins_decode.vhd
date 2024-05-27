@@ -9,7 +9,7 @@ entity ins_decode is
         instruction : in STD_LOGIC_VECTOR (31 downto 0);
 
         opcode : out STD_LOGIC_VECTOR (6 downto 0);
-        funct3 : out STD_LOGIC_VECTOR (3 downto 0);
+        funct3 : out STD_LOGIC_VECTOR (2 downto 0);
         funct7 : out STD_LOGIC_VECTOR (6 downto 0);
 
         rs1 : out STD_LOGIC_VECTOR (4 downto 0);
@@ -42,21 +42,36 @@ begin
         when "0110011" => -- R-Type (ALU)
             imm <= (others => '0');
         when "0010011" => -- I-Type (ALU)
-            imm <= (others => instruction(31), instruction(31 downto 20));
+            imm <= (31 downto 11 => instruction(31),
+                    10 downto 0 => instruction(30 downto 20));
         when "0000011" => -- I-Type (Load)
-            imm <= (others => instruction(31), instruction(31 downto 20));
+            imm <= (31 downto 11 => instruction(31),
+                    10 downto 0 => instruction(30 downto 20));
         when "0100011" => -- S-Type (Store)
-            imm <= (others => instruction(31), instruction(31 downto 25), instruction(11 downto 7));
+            imm <= (31 downto 11 => instruction(31),
+                    10 downto 5 => instruction(30 downto 25),
+                    4 downto 0 => instruction(11 downto 7));
         when "1100011" => -- B-Type (Branch)
-            imm <= (others => instruction(31), instruction(7), instruction(30 downto 25), instruction(11 downto 8), '0');
-        when "1100111" => -- J-Type (JAL)
-            imm <= (others => instruction(31), instruction(19 downto 12), instruction(20), instruction(30 downto 21), '0');
+            imm <= (31 downto 12 => instruction(31), 
+                    11 downto 11 => instruction(7),
+                    10 downto 5 => instruction(30 downto 25),
+                    4 downto 1 => instruction(11 downto 8), 
+                    0 downto 0 => '0');
+        when "1101111" => -- J-Type (JAL)
+            imm <= (31 downto 20 => instruction(31),
+                    19 downto 12 => instruction(19 downto 12),
+                    11 downto 11 => instruction(20),
+                    10 downto 1 => instruction(30 downto 21),
+                    0 downto 0 => '0');
         when "1100111" => -- I-Type (JALR)
-            imm <= (others => instruction(31), instruction(31 downto 20));
+            imm <= (31 downto 11 => instruction(31), 
+                    10 downto 0 => instruction(30 downto 20));
         when "0110111" => -- U-Type (LUI)
-            imm <= (instruction(31 downto 12), others => '0');
+            imm <= (31 downto 12 => instruction(31 downto 12),
+                    11 downto 0 => '0');
         when "1110011" => -- I-Type (ECALL / EBREAK)
-            imm <= (others => instruction(31), instruction(31 downto 20));
+            imm <= (31 downto 11 => instruction(31),
+                    10 downto 0 => instruction(30 downto 20));
         when others =>
             imm <= (others => '0');
         end case;

@@ -15,14 +15,14 @@ entity bram is
         -- Port A
         A_clk: in std_logic;
         A_Enable: in std_logic;
-        A_Addr: in std_logic_vector(9 downto 0);
+        A_Addr: in std_logic_vector(15 downto 0);
 
         A_Read: out std_logic_vector(31 downto 0);
         A_Write: in std_logic_vector(31 downto 0);
 
         -- Port B
         B_clk: in std_logic;
-        B_Addr: in std_logic_vector(9 downto 0);
+        B_Addr: in std_logic_vector(15 downto 0);
 
         B_Read: out std_logic_vector(31 downto 0)
     );

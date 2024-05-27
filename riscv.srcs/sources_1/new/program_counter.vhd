@@ -4,7 +4,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity pc is
+entity program_counter is
     Port (
         clk : in STD_LOGIC;
         res_n : in STD_LOGIC;
@@ -17,9 +17,9 @@ entity pc is
         branch : in STD_LOGIC;
         res : in STD_LOGIC_VECTOR (31 downto 0)
     );
-end pc;
+end program_counter;
 
-architecture Behavioral of pc is
+architecture Behavioral of program_counter is
     signal pc_next : STD_LOGIC_VECTOR (31 downto 0);
 begin
 

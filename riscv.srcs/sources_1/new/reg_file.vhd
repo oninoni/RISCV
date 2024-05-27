@@ -53,23 +53,27 @@ begin
     begin
         if (res_n = '1') then -- Reset
             regs <= (others => (others => '0'));
-        elsif (rising_edge(clk) and rd /= "00000") then -- Ignore Hard Zero
-            case (opcode) is
-            when "0110011" => -- R-Type (ALU)
-                regs(to_integer(unsigned(rd))) <= res;
-            when "0010011" => -- I-Type (ALU Imm)
-                regs(to_integer(unsigned(rd))) <= res;
-            when "0000011" => -- I-Type (Load)
-                regs(to_integer(unsigned(rd))) <= ram_rd;
-            when "1101111" => -- J-Type (JAL)
-                regs(to_integer(unsigned(rd))) <= pc_4;
-            when "1100111" => -- I-Type (JALR)
-                regs(to_integer(unsigned(rd))) <= pc_4;
-            when "0110111" => -- U-Type (LUI)
-                regs(to_integer(unsigned(rd))) <= imm;
-            when "0010111" => -- U-Type (AUIPC)
-                regs(to_integer(unsigned(rd))) <= res;
-            end case;
+        elsif (rising_edge(clk)) then
+            if rd /= "00000" then -- Ignore Hard Zero
+                case (opcode) is
+                when "0110011" => -- R-Type (ALU)
+                    regs(to_integer(unsigned(rd))) <= res;
+                when "0010011" => -- I-Type (ALU Imm)
+                    regs(to_integer(unsigned(rd))) <= res;
+                when "0000011" => -- I-Type (Load)
+                    regs(to_integer(unsigned(rd))) <= ram_rd;
+                when "1101111" => -- J-Type (JAL)
+                    regs(to_integer(unsigned(rd))) <= pc_4;
+                when "1100111" => -- I-Type (JALR)
+                    regs(to_integer(unsigned(rd))) <= pc_4;
+                when "0110111" => -- U-Type (LUI)
+                    regs(to_integer(unsigned(rd))) <= imm;
+                when "0010111" => -- U-Type (AUIPC)
+                    regs(to_integer(unsigned(rd))) <= res;
+                when others =>
+                    null;
+                end case;
+            end if;
         end if;
     end process;
 end Behavioral;

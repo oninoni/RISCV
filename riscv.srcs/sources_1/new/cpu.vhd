@@ -13,7 +13,7 @@ end entity cpu;
 
 architecture Behavioral of cpu is
     -- Instruction Decoder Signals
-    signal opcode : std_logic_vector(3 downto 0);
+    signal opcode : std_logic_vector(6 downto 0);
     signal funct3 : std_logic_vector(2 downto 0);
     signal funct7 : std_logic_vector(6 downto 0);
 
@@ -21,7 +21,7 @@ architecture Behavioral of cpu is
     signal rs2 : std_logic_vector(4 downto 0);
     signal rd : std_logic_vector(4 downto 0);
 
-    signal imm : std_logic_vector(11 downto 0);
+    signal imm : std_logic_vector(31 downto 0);
 
     -- Program Counter Signals
     signal pc : std_logic_vector(31 downto 0);
@@ -32,7 +32,7 @@ architecture Behavioral of cpu is
     signal rd2 : std_logic_vector(31 downto 0);
 
     -- ALU Signals
-    signal res : std_logic;
+    signal res : std_logic_vector(31 downto 0);
 
     -- Branch Logic Signals
     signal branch : std_logic;
@@ -58,7 +58,7 @@ begin
     );
 
     -- Program Counter
-    pc: entity work.pc
+    program_counter: entity work.program_counter
     port map (
         clk => clk,
         res_n => res_n,
@@ -130,7 +130,7 @@ begin
         opcode => opcode,
 
         res => res,
-        ram_wd => ram_wd,
+        rd2 => rd2,
         ram_rd => ram_rd,
 
         pc => pc,

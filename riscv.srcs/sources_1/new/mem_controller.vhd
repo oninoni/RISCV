@@ -11,7 +11,7 @@ entity mem_controller is
         opcode : in STD_LOGIC_VECTOR (6 downto 0);
 
         res : in STD_LOGIC_VECTOR (31 downto 0);
-        ram_wd : in STD_LOGIC_VECTOR (31 downto 0);
+        rd2 : in STD_LOGIC_VECTOR (31 downto 0);
         ram_rd : out STD_LOGIC_VECTOR (31 downto 0);
 
         pc : in STD_LOGIC_VECTOR (31 downto 0);
@@ -37,15 +37,15 @@ begin
         -- Executed on the falling edge of the clock
         A_clk => not clk,
         A_Enable => write_enable,
-        A_addr => res,
+        A_addr => res(15 downto 0),
 
-        A_Write => ram_wd,
+        A_Write => rd2,
         A_Read => ram_rd,
 
         -- Port B, Fetch Instructions
         -- Executed on the rising edge of the clock
         B_clk => clk,
-        B_addr => pc,
+        B_addr => pc(15 downto 0),
 
         B_Read => instruction
     );

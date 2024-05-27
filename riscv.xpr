@@ -114,8 +114,8 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PSRCDIR/sources_1/new/pc.vhd">
-        <FileInfo RelPath="pc.vhd" SFType="VHDL2019">
+      <File Path="$PSRCDIR/sources_1/new/program_counter.vhd">
+        <FileInfo SFType="VHDL2019">
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
@@ -134,6 +134,13 @@
       </File>
       <File Path="$PSRCDIR/sources_1/new/cpu.vhd">
         <FileInfo SFType="VHDL2019">
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/new/pc.vhd">
+        <FileInfo RelPath="pc.vhd" SFType="VHDL2019">
+          <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
