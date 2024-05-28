@@ -14,17 +14,23 @@ entity bram is
     port (
         -- Port A
         A_clk: in std_logic;
-        A_Enable: in std_logic_vector(3 downto 0);
+        A_Enable: in std_logic;
+
+        A_Write: in std_logic_vector(3 downto 0);
         A_Addr: in std_logic_vector(9 downto 0);
 
-        A_Read: out std_logic_vector(31 downto 0);
-        A_Write: in std_logic_vector(31 downto 0);
+        A_RData: out std_logic_vector(31 downto 0);
+        A_WData: in std_logic_vector(31 downto 0);
 
         -- Port B
         B_clk: in std_logic;
+        B_Enable: in std_logic;
+
+        B_Write: in std_logic_vector(3 downto 0);
         B_Addr: in std_logic_vector(9 downto 0);
 
-        B_Read: out std_logic_vector(31 downto 0)
+        B_RData: out std_logic_vector(31 downto 0);
+        B_WData: in std_logic_vector(31 downto 0)
     );
 end entity bram;
 
@@ -218,23 +224,23 @@ begin
     port map (
         -- Port A I/O Signals
         CLKARDCLK => A_clk,
-        ENARDEN => '1',
+        ENARDEN => A_Enable,
 
-        WEA => A_Enable,
+        WEA => A_Write,
         ADDRARDADDR => ('1', A_Addr(9 downto 0), others => '0'),
 
-        DOADO => A_Read,
-        DIADI => A_Write,
+        DOADO => A_RData,
+        DIADI => A_WData,
 
         -- Port B I/O Signals
         CLKBWRCLK => B_clk,
-        ENBWREN => '1',
+        ENBWREN => B_Enable,
 
-        WEBWE => "00000000",
+        WEBWE => ("0000", B_Write),
         ADDRBWRADDR => ('1', B_Addr(9 downto 0), others => '0'),
 
-        DOBDO => B_Read,
-        DIBDI => "00000000000000000000000000000000",
+        DOBDO => B_RData,
+        DIBDI => B_WData,
 
         -- Disabled Signals
         RSTRAMARSTRAM => '0',

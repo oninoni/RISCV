@@ -144,50 +144,26 @@ architecture Behavioral of mem_controller is
         X"00000000",
         others => '0'
     );
-    
-    impure function untangle_init(
-        init : in std_logic_vector(0 to 32767)
-    ) return bit_vector is
-        variable init_ut : bit_vector(0 to 32767);
-
-        variable target : integer;
-        variable source : integer;
-    begin
-        -- Swap the order of the words in groups of 8
-        for i in 0 to 127 loop
-            for j in 0 to 7 loop
-                target := i * 8 + j;
-                source := i * 8 + (7 - j);
-
-                init_ut(target * 32 to target * 32 + 31) := to_bitvector(init(source * 32 to source * 32 + 31));
-            end loop;
-        end loop;
-    
-        return init_ut;
-    end function;
 begin
 
-    -- Single 36kb BRAM for now. Can be expanded later.
-    ins_mem : entity work.bram
+    -- Initialize the Instruction Memory
+    bram_instruction : entity work.bram_instruction
     generic map (
-        INIT_VALUE => untangle_init(INIT_VALUE)
-    )
-    port map (
-        -- Port A: Load / Store Instructions
-        -- Executed on the falling edge of the clock
-        A_clk => not clk,
-        A_Enable => write_enable,
-        A_addr => res(11 downto 2),
+        BRAM_COUNT => 4,
+        INIT_VALUE => (INIT_VALUE, others => '0')
+    ) port map (
+        data_clk => not clk,
+        data_en => '1', -- TODO: Only enable when needed.
 
-        A_Write => ram_wd_internal,
-        A_Read => ram_rd_internal,
+        data_wr => write_enable,
+        data_adr => res(13 downto 0),
 
-        -- Port B, Fetch Instructions
-        -- Executed on the rising edge of the clock
-        B_clk => clk,
-        B_addr => pc(11 downto 2),
+        data_out => ram_rd_internal,
+        data_in => ram_wd_internal,
 
-        B_Read => instruction
+        instruction_clk => clk,
+        instruction_adr => pc(13 downto 0),
+        instruction_out => instruction
     );
 
     -- Data Read Masking
@@ -247,7 +223,7 @@ begin
                 when "11" => -- 24-31
                     ram_rd <= ( 31 downto 8 => '0',
                                 7 downto 0 => ram_rd_internal(31 downto 24));
-                                
+
                 when others => -- Misaligned Access (Exception)
                     ram_rd <= (others => '0');
                 end case;
@@ -257,7 +233,7 @@ begin
                     ram_rd <= ( 31 downto 16 => '0',
                                 15 downto 0 => ram_rd_internal(15 downto 0));
                 when "10" => -- 16-31
-                    ram_rd <= ( 31 downto 16 => '0', 
+                    ram_rd <= ( 31 downto 16 => '0',
                                 15 downto 0 => ram_rd_internal(31 downto 16));
 
                 when others => -- Misaligned Access (Exception)
@@ -281,23 +257,23 @@ begin
                 case (res(1 downto 0)) is
                 when "00" => -- 0-7
                     write_enable <= "1000";
-                    ram_wd_internal <= (31 downto 24 => rd2(7 downto 0), 
+                    ram_wd_internal <= (31 downto 24 => rd2(7 downto 0),
                                         23 downto 0 => '0');
                 when "01" => -- 8-15
                     write_enable <= "0100";
-                    ram_wd_internal <= (31 downto 24 => '0', 
+                    ram_wd_internal <= (31 downto 24 => '0',
                                         23 downto 16 => rd2(7 downto 0),
                                         15 downto 0 => '0');
                 when "10" => -- 16-23
                     write_enable <= "0010";
-                    ram_wd_internal <= (31 downto 16 => '0', 
+                    ram_wd_internal <= (31 downto 16 => '0',
                                         15 downto 8 => rd2(7 downto 0),
                                         7 downto 0 => '0');
                 when "11" => -- 24-31
                     write_enable <= "0001";
-                    ram_wd_internal <= (31 downto 8 => '0', 
+                    ram_wd_internal <= (31 downto 8 => '0',
                                         7 downto 0 => rd2(7 downto 0));
-                                
+
                 when others => -- Misaligned Access (Exception)
                     write_enable <= "0000";
                     ram_wd_internal <= (others => '0');
@@ -306,7 +282,7 @@ begin
                 case(res(1 downto 0)) is
                 when "00" => -- 0-15
                     write_enable <= "1100";
-                    ram_wd_internal <= (31 downto 16 => '0', 
+                    ram_wd_internal <= (31 downto 16 => '0',
                                         15 downto 0 => rd2(15 downto 0));
                 when "10" => -- 16-31
                     write_enable <= "0011";

@@ -9,6 +9,7 @@ entity top is
         CLK100MHZ : in std_logic;
         btnC : in std_logic;
 
+        sw : in std_logic_vector(15 downto 0);
         LED : out std_logic_vector(15 downto 0)
     );
 end top;
