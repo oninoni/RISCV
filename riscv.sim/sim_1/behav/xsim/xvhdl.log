@@ -1,0 +1,13 @@
+INFO: [VRFC 10-163] Analyzing VHDL file "E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd" into library xil_defaultlib
+INFO: [VRFC 10-3107] analyzing entity 'mem_controller'
+ERROR: [VRFC 10-2989] 'ram_type' is not declared [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:144]
+ERROR: [VRFC 10-2989] 'text' is not declared [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:145]
+ERROR: [VRFC 10-2989] 'ram_type' is not declared [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:146]
+ERROR: [VRFC 10-2989] 'readline' is not declared [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:149]
+ERROR: [VRFC 10-2989] 'rdline' is not declared [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:150]
+ERROR: [VRFC 10-2989] 'ram_contents' is not declared [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:152]
+ERROR: [VRFC 10-4982] syntax error near ')' [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:160]
+ERROR: [VRFC 10-9439] type error near 'load_memory'; expected type 'bit_vector' [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:160]
+ERROR: [VRFC 10-8875] could not find a match for subprogram 'load_memory' [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:160]
+ERROR: [VRFC 10-9458] unit 'behavioral' is ignored due to previous errors [E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd:27]
+INFO: [VRFC 10-8704] VHDL file 'E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd' is ignored due to errors

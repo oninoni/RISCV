@@ -16,7 +16,7 @@ entity ins_decode is
         rs2 : out STD_LOGIC_VECTOR (4 downto 0);
         rd : out STD_LOGIC_VECTOR (4 downto 0);
 
-        imm : out STD_LOGIC_VECTOR (31 downto 0);
+        imm : out STD_LOGIC_VECTOR (31 downto 0)
     );
 end ins_decode;
 
@@ -52,10 +52,10 @@ begin
                     10 downto 5 => instruction(30 downto 25),
                     4 downto 0 => instruction(11 downto 7));
         when "1100011" => -- B-Type (Branch)
-            imm <= (31 downto 12 => instruction(31), 
+            imm <= (31 downto 12 => instruction(31),
                     11 downto 11 => instruction(7),
                     10 downto 5 => instruction(30 downto 25),
-                    4 downto 1 => instruction(11 downto 8), 
+                    4 downto 1 => instruction(11 downto 8),
                     0 downto 0 => '0');
         when "1101111" => -- J-Type (JAL)
             imm <= (31 downto 20 => instruction(31),
@@ -64,7 +64,7 @@ begin
                     10 downto 1 => instruction(30 downto 21),
                     0 downto 0 => '0');
         when "1100111" => -- I-Type (JALR)
-            imm <= (31 downto 11 => instruction(31), 
+            imm <= (31 downto 11 => instruction(31),
                     10 downto 0 => instruction(30 downto 20));
         when "0110111" => -- U-Type (LUI)
             imm <= (31 downto 12 => instruction(31 downto 12),

@@ -20,10 +20,13 @@ entity program_counter is
 end program_counter;
 
 architecture Behavioral of program_counter is
+    signal pc_internal : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+
     signal pc_next : STD_LOGIC_VECTOR (31 downto 0);
 begin
 
-pc_4 <= std_logic_vector(unsigned(pc) + 4);
+pc <= pc_internal;
+pc_4 <= std_logic_vector(unsigned(pc_internal) + 4);
 
 -- Combinational process
 process(all)
@@ -50,9 +53,9 @@ end process;
 process(clk, res_n)
 begin
     if res_n = '0' then
-        pc <= (others => '0');
+        pc_internal <= (others => '0');
     elsif rising_edge(clk) then
-        pc <= pc_next;
+        pc_internal <= pc_next;
     end if;
 end process;
 

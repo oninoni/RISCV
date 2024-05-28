@@ -1,0 +1,14 @@
+# compile vhdl design source files
+vhdl2008 xil_defaultlib  \
+"../../../../riscv.srcs/sources_1/new/alu.vhd" \
+"../../../../riscv.srcs/sources_1/new/bram.vhd" \
+"../../../../riscv.srcs/sources_1/new/branch_logic.vhd" \
+"../../../../riscv.srcs/sources_1/new/ins_decode.vhd" \
+"../../../../riscv.srcs/sources_1/new/program_counter.vhd" \
+"../../../../riscv.srcs/sources_1/new/reg_file.vhd" \
+"../../../../riscv.srcs/sources_1/new/mem_controller.vhd" \
+"../../../../riscv.srcs/sources_1/new/cpu.vhd" \
+"../../../../riscv.srcs/sim_1/new/cpu_tb.vhd" \
+
+# Do not sort compile order
+nosort

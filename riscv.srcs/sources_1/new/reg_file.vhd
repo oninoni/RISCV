@@ -38,13 +38,39 @@ begin
         if (rs1 = "00000") then -- Hard Zero
             rd1 <= (others => '0');
         else
-            rd1 <= regs(to_integer(unsigned(rs1)));
+            case (opcode) is
+            when "0110011" => -- R-Type (ALU)
+                rd1 <= regs(to_integer(unsigned(rs1)));
+            when "0010011" => -- I-Type (ALU Imm)
+                rd1 <= regs(to_integer(unsigned(rs1)));
+            when "0000011" => -- I-Type (Load)
+                rd1 <= regs(to_integer(unsigned(rs1)));
+            when "0100011" => -- S-Type (Store)
+                rd1 <= regs(to_integer(unsigned(rs1)));
+            when "1100011" => -- B-Type (Branch)
+                rd1 <= regs(to_integer(unsigned(rs1)));
+            when "1100111" => -- I-Type (JALR)
+                rd1 <= regs(to_integer(unsigned(rs1)));
+
+            when others =>
+                rd1 <= (others => '0');
+            end case;
         end if;
 
         if (rs2 = "00000") then -- Hard Zero
             rd2 <= (others => '0');
         else
-            rd2 <= regs(to_integer(unsigned(rs2)));
+            case (opcode) is
+            when "0110011" => -- R-Type (ALU)
+                rd2 <= regs(to_integer(unsigned(rs2)));
+            when "0100011" => -- S-Type (Store)
+                rd2 <= regs(to_integer(unsigned(rs2)));
+            when "1100011" => -- B-Type (Branch)
+                rd2 <= regs(to_integer(unsigned(rs2)));
+
+            when others =>
+                rd2 <= (others => '0');
+            end case;
         end if;
     end process;
 

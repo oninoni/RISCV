@@ -1,0 +1,13 @@
+0.7
+2020.2
+Oct 13 2023
+20:47:58
+E:/Uni/Reconf/RISCV/riscv.srcs/sim_1/new/cpu_tb.vhd,1716854269,vhdl2008,,,,cpu_tb,,,,,,,,
+E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/alu.vhd,1716844352,vhdl2008,E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/cpu.vhd,,,alu,,,,,,,,
+E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/bram.vhd,1716859577,vhdl2008,E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd,,,bram,,,,,,,,
+E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/branch_logic.vhd,1716835159,vhdl2008,E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/cpu.vhd,,,branch_logic,,,,,,,,
+E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/cpu.vhd,1716854910,vhdl2008,E:/Uni/Reconf/RISCV/riscv.srcs/sim_1/new/cpu_tb.vhd,,,cpu,,,,,,,,
+E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/ins_decode.vhd,1716852621,vhdl2008,E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/cpu.vhd,,,ins_decode,,,,,,,,
+E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/mem_controller.vhd,1716859505,vhdl2008,E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/cpu.vhd,,,mem_controller,,,,,,,,
+E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/program_counter.vhd,1716852846,vhdl2008,E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/cpu.vhd,,,program_counter,,,,,,,,
+E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/reg_file.vhd,1716853119,vhdl2008,E:/Uni/Reconf/RISCV/riscv.srcs/sources_1/new/cpu.vhd,,,reg_file,,,,,,,,

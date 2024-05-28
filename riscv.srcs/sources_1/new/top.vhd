@@ -8,6 +8,8 @@ entity top is
     Port (
         CLK100MHZ : in std_logic;
         btnC : in std_logic;
+
+        LED : out std_logic_vector(15 downto 0)
     );
 end top;
 
@@ -16,6 +18,8 @@ begin
     cpu : entity work.cpu
     port map (
         clk => CLK100MHZ,
-        res_n => btnC
+        res_n => btnC,
+
+        LED => LED
     );
 end Behavioral;
