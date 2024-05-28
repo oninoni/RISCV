@@ -17,6 +17,6 @@ begin
         res_n => res_n
     );
 
-    clk <= not clk after 100 ns;
-    res_n <= '1' after 200 ns;
+    clk <= not clk after 200 ns;
+    res_n <= '1' after 500 ns;
 end Behavioral;

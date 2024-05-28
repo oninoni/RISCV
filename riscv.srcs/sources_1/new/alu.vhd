@@ -39,8 +39,18 @@ begin
                     res <= (others => '0');
                 end case;
             --when "001" => -- SLL
-            --when "010" => -- SLT
-            --when "011" => -- SLTU
+            when "010" => -- SLT
+                if (signed(rd1) < signed(rd2)) then
+                    res <= X"00000001";
+                else
+                    res <= (others => '0');
+                end if;
+            when "011" => -- SLTU
+                if (unsigned(rd1) < unsigned(rd2)) then
+                    res <= X"00000001";
+                else
+                    res <= (others => '0');
+                end if;
             when "100" => -- XOR
                 res <= rd1 xor rd2;
             --when "101" => -- SRL / SRA
@@ -56,8 +66,18 @@ begin
             when "000" => -- ADDI
                 res <= std_logic_vector(signed(rd1) + signed(imm));
             --when "001" => -- SLLI
-            --when "010" => -- SLTI
-            --when "011" => -- SLTIU
+            when "010" => -- SLTI
+                if (signed(rd1) < signed(imm)) then
+                    res <= X"00000001";
+                else
+                    res <= (others => '0');
+                end if;
+            when "011" => -- SLTIU
+                if (unsigned(rd1) < unsigned(imm)) then
+                    res <= X"00000001";
+                else
+                    res <= (others => '0');
+                end if;
             when "100" => -- XORI
                 res <= rd1 xor imm;
             --when "101" => -- SRLI / SRAI

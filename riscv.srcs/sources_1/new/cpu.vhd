@@ -7,9 +7,7 @@ use ieee.numeric_std.all;
 entity cpu is
     port (
         clk : in std_logic;
-        res_n : in std_logic;
-
-        LED : out std_logic_vector(15 downto 0)
+        res_n : in std_logic
     );
 end entity cpu;
 
@@ -43,8 +41,6 @@ architecture Behavioral of cpu is
     signal ram_rd : std_logic_vector(31 downto 0);
     signal instruction : std_logic_vector(31 downto 0);
 begin
-    LED <= res(15 downto 0);
-
     -- Instruction Decoder
     ins_decode: entity work.ins_decode
     port map (
@@ -132,6 +128,7 @@ begin
         clk => clk,
 
         opcode => opcode,
+        funct3 => funct3,
 
         res => res,
         rd2 => rd2,

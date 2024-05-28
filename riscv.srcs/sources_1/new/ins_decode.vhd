@@ -69,6 +69,9 @@ begin
         when "0110111" => -- U-Type (LUI)
             imm <= (31 downto 12 => instruction(31 downto 12),
                     11 downto 0 => '0');
+        when "0010111" => -- U-Type (AUIPC)
+            imm <= (31 downto 12 => instruction(31 downto 12),
+                    11 downto 0 => '0');
         when "1110011" => -- I-Type (ECALL / EBREAK)
             imm <= (31 downto 11 => instruction(31),
                     10 downto 0 => instruction(30 downto 20));

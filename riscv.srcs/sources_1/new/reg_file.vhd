@@ -77,7 +77,7 @@ begin
     -- Write register file
     process(clk, res_n)
     begin
-        if (res_n = '1') then -- Reset
+        if (res_n = '0') then -- Reset
             regs <= (others => (others => '0'));
         elsif (rising_edge(clk)) then
             if rd /= "00000" then -- Ignore Hard Zero

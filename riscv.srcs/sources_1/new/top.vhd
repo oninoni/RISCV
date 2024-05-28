@@ -18,8 +18,6 @@ begin
     cpu : entity work.cpu
     port map (
         clk => CLK100MHZ,
-        res_n => btnC,
-
-        LED => LED
+        res_n => btnC
     );
 end Behavioral;

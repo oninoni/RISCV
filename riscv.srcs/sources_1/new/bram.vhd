@@ -14,7 +14,7 @@ entity bram is
     port (
         -- Port A
         A_clk: in std_logic;
-        A_Enable: in std_logic;
+        A_Enable: in std_logic_vector(3 downto 0);
         A_Addr: in std_logic_vector(9 downto 0);
 
         A_Read: out std_logic_vector(31 downto 0);
@@ -75,8 +75,8 @@ begin
         SIM_DEVICE => "7SERIES",
 
         -- WriteMode: Value on output upon a write ("WRITE_FIRST", "READ_FIRST", or "NO_CHANGE")
-        WRITE_MODE_A => "WRITE_FIRST",
-        WRITE_MODE_B => "WRITE_FIRST",
+        WRITE_MODE_A => "READ_FIRST",
+        WRITE_MODE_B => "READ_FIRST",
 
         -- Memory Initialization
         --INIT_FILE => INIT_FILE -> Only works in simulation
@@ -220,7 +220,7 @@ begin
         CLKARDCLK => A_clk,
         ENARDEN => '1',
 
-        WEA => (others => A_Enable),
+        WEA => A_Enable,
         ADDRARDADDR => ('1', A_Addr(9 downto 0), others => '0'),
 
         DOADO => A_Read,

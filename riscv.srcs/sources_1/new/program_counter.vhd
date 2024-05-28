@@ -54,7 +54,7 @@ process(clk, res_n)
 begin
     if res_n = '0' then
         pc_internal <= (others => '0');
-    elsif rising_edge(clk) then
+    elsif falling_edge(clk) then
         pc_internal <= pc_next;
     end if;
 end process;
