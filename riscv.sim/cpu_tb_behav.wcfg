@@ -10,13 +10,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="8,775.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="21,910.001 ns"></ZoomEndTime>
-      <Cursor1Time time="11,700.000 ns"></Cursor1Time>
+      <ZoomStartTime time="2.918000 us"></ZoomStartTime>
+      <ZoomEndTime time="65.018001 us"></ZoomEndTime>
+      <Cursor1Time time="35.800100 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="174"></NameColumnWidth>
-      <ValueColumnWidth column_width="125"></ValueColumnWidth>
+      <ValueColumnWidth column_width="120"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="23" />
    <wvobject fp_name="/cpu_tb/clk" type="logic">
@@ -55,6 +55,7 @@
    <wvobject fp_name="/cpu_tb/cpu/imm" type="array">
       <obj_property name="ElementShortName">imm[31:0]</obj_property>
       <obj_property name="ObjectShortName">imm[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_tb/cpu/rs1" type="array">
       <obj_property name="ElementShortName">rs1[4:0]</obj_property>
@@ -67,6 +68,7 @@
    <wvobject fp_name="/cpu_tb/cpu/rd" type="array">
       <obj_property name="ElementShortName">rd[4:0]</obj_property>
       <obj_property name="ObjectShortName">rd[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider19">
       <obj_property name="label">BRAM</obj_property>

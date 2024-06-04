@@ -5,8 +5,18 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity mem_controller is
+    generic (
+        -- Parameters for the Instruction Memory
+        BRAM_COUNT : integer := 4;
+        INIT_VALUE : std_logic_vector := (others => '0');
+
+        -- Parameters for the GPIO Memory Interface
+        GPIO_IN_COUNT : integer := 0;
+        GPIO_OUT_COUNT : integer := 0
+    );
     Port (
         clk : in STD_LOGIC;
+        res_n : in STD_LOGIC;
 
         opcode : in STD_LOGIC_VECTOR (6 downto 0);
         funct3 : in STD_LOGIC_VECTOR (2 downto 0);
@@ -16,7 +26,11 @@ entity mem_controller is
         ram_rd : out STD_LOGIC_VECTOR (31 downto 0);
 
         pc : in STD_LOGIC_VECTOR (31 downto 0);
-        instruction : out STD_LOGIC_VECTOR (31 downto 0)
+        instruction : out STD_LOGIC_VECTOR (31 downto 0);
+
+        -- GPIO Memory Interface
+        gpio_in : in STD_LOGIC_VECTOR (GPIO_IN_COUNT - 1 downto 0);
+        gpio_out : out STD_LOGIC_VECTOR (GPIO_OUT_COUNT - 1 downto 0)
     );
 end mem_controller;
 
@@ -166,6 +180,27 @@ begin
         instruction_out => instruction
     );
 
+    -- GPIO Memory Interface
+    vram_gpio : entity work.vram_gpio
+    generic map (
+        GPIO_IN_COUNT => GPIO_IN_COUNT,
+        GPIO_OUT_COUNT => GPIO_OUT_COUNT,
+        GPIO_START_ADDRESS => GPIO_START_ADDRESS
+    ) port map (
+        data_clk => not clk,
+        res_n => res_n,
+        data_en => '1', -- TODO: Only enable when needed.
+
+        data_wr => write_enable,
+        data_adr => res(13 downto 0),
+
+        data_out => ram_rd_internal,
+        data_in => ram_wd_internal,
+
+        gpio_in => gpio_in,
+        gpio_out => gpio_out
+    );
+
     -- Data Read Masking
     process(all) begin
         case (opcode) is
@@ -248,7 +283,7 @@ begin
         end case;
     end process;
 
-    -- Write Enable Logic
+    -- Data Write Masking
     process(all) begin
         case (opcode) is
         when "0100011" => -- S-Type (Store, res = address)
