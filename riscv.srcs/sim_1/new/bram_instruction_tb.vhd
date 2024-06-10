@@ -4,10 +4,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity cpu_tb is
-end cpu_tb;
+entity bram_instruction_tb is
+end bram_instruction_tb;
 
-architecture Behavioral of cpu_tb is
+architecture Behavioral of bram_instruction_tb is
+    constant BRAM_COUNT : integer := 1;
+
     constant INIT_VALUE : std_logic_vector(32767 downto 0) := (
         X"00000093",
         X"00000193",
@@ -122,38 +124,30 @@ architecture Behavioral of cpu_tb is
         others => '0'
     );
 
-    signal clk : std_logic := '0';
-    signal res_n : std_logic := '0';
+    signal data_clk : std_logic := '0';
+    signal data_en : std_logic := '0';
 
-    signal sw : std_logic_vector(15 downto 0) := (others => '0');
-    signal LED : std_logic_vector(15 downto 0);
+    signal data_wr : std_logic_vector(3 downto 0) := "0000";
+    signal data_adr : std_logic_vector((11 + BRAM_WIDTH) downto 0) := "000000000000";
 
-    signal gpio_in : std_logic_vector(255 downto 0) := (others => '0');
-    signal gpio_out : std_logic_vector(255 downto 0) := (others => '0');
+    signal data_out : std_logic_vector(31 downto 0);
+    signal data_in : std_logic_vector(31 downto 0) := (others => '0');
 begin
-    gpio_in <= (
-        15 downto 0 => sw,
-        others => '0'
-    );
-
-    gpio_out <= (
-        15 downto 0 => LED,
-        others => '0'
-    );
-
-    cpu : entity work.cpu
+    bram_instruction : entity work.bram_instruction
     generic map (
-        BRAM_COUNT => 16,
-        INIT_VALUE => (INIT_VALUE, others => '0')
-    )
-    port map (
-        clk => clk,
-        res_n => res_n,
+        BRAM_COUNT => BRAM_COUNT,
 
-        gpio_in => gpio_in,
-        gpio_out => gpio_out
+        INIT_VALUE => (INIT_VALUE, others => '0')
+    ) port map (
+        data_clk => data_clk,
+        data_en => data_en,
+
+        data_wr => data_wr,
+        data_adr => data_adr,
+
+        data_out => data_out,
+        data_in => data_in
     );
 
-    clk <= not clk after 200 ns;
-    res_n <= '1' after 500 ns;
+    data_clk <= not data_clk after 200 ns;
 end Behavioral;

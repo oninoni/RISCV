@@ -63,13 +63,14 @@ begin
     begin
         gen_enable: if (BRAM_COUNT = 1) generate -- Special case for single BRAM
             bram_data_en <= data_en;
-            bram_instruction_en <= data_en;
+
+            bram_instruction_en <= '1';
         else generate
             bram_data_en <= data_en
                 when (data_adr((12 + BRAM_WIDTH - 1) downto 12) = std_logic_vector(to_unsigned(i, BRAM_WIDTH)))
                 else '0';
 
-            bram_instruction_en <= data_en
+            bram_instruction_en <= '1'
                 when (instruction_adr((12 + BRAM_WIDTH - 1) downto 12) = std_logic_vector(to_unsigned(i, BRAM_WIDTH)))
                 else '0';
         end generate;

@@ -5,9 +5,16 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity cpu is
+    generic (
+        BRAM_COUNT : integer := 4;
+        INIT_VALUE : std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0')
+    );
     port (
         clk : in std_logic;
-        res_n : in std_logic
+        res_n : in std_logic;
+
+        gpio_in : in STD_LOGIC_VECTOR (255 downto 0);
+        gpio_out : out STD_LOGIC_VECTOR (255 downto 0)
     );
 end entity cpu;
 
@@ -124,8 +131,13 @@ begin
 
     -- Memory Controller
     mem_controller: entity work.mem_controller
+    generic map (
+        BRAM_COUNT => BRAM_COUNT,
+        INIT_VALUE => INIT_VALUE
+    )
     port map (
         clk => clk,
+        res_n => res_n,
 
         opcode => opcode,
         funct3 => funct3,
@@ -135,7 +147,9 @@ begin
         ram_rd => ram_rd,
 
         pc => pc,
-        instruction => instruction
-    );
+        instruction => instruction,
 
+        gpio_in => gpio_in,
+        gpio_out => gpio_out
+    );
 end Behavioral;

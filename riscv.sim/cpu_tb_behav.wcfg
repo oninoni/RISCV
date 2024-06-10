@@ -10,15 +10,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="2.918000 us"></ZoomStartTime>
-      <ZoomEndTime time="65.018001 us"></ZoomEndTime>
-      <Cursor1Time time="35.800100 us"></Cursor1Time>
+      <ZoomStartTime time="20,220.667 ns"></ZoomStartTime>
+      <ZoomEndTime time="24,704.668 ns"></ZoomEndTime>
+      <Cursor1Time time="21,570.667 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="174"></NameColumnWidth>
-      <ValueColumnWidth column_width="120"></ValueColumnWidth>
+      <ValueColumnWidth column_width="116"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="23" />
+   <WVObjectSize size="33" />
    <wvobject fp_name="/cpu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -71,7 +71,7 @@
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider19">
-      <obj_property name="label">BRAM</obj_property>
+      <obj_property name="label">Mem Controller</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_tb/cpu/mem_controller/opcode" type="array">
@@ -91,6 +91,46 @@
    <wvobject fp_name="/cpu_tb/cpu/mem_controller/ram_rd_internal" type="array">
       <obj_property name="ElementShortName">ram_rd_internal[31:0]</obj_property>
       <obj_property name="ObjectShortName">ram_rd_internal[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/cpu/mem_controller/ins_en" type="logic">
+      <obj_property name="ElementShortName">ins_en</obj_property>
+      <obj_property name="ObjectShortName">ins_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/cpu/mem_controller/gpio_en" type="logic">
+      <obj_property name="ElementShortName">gpio_en</obj_property>
+      <obj_property name="ObjectShortName">gpio_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/cpu/mem_controller/stack_en" type="logic">
+      <obj_property name="ElementShortName">stack_en</obj_property>
+      <obj_property name="ObjectShortName">stack_en</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider292">
+      <obj_property name="label">INS_BRAM(0)</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/cpu/mem_controller/bram_instruction/\gen_bram(0)\/bram/A_clk" type="logic">
+      <obj_property name="ElementShortName">A_clk</obj_property>
+      <obj_property name="ObjectShortName">A_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/cpu/mem_controller/bram_instruction/\gen_bram(0)\/bram/A_Enable" type="logic">
+      <obj_property name="ElementShortName">A_Enable</obj_property>
+      <obj_property name="ObjectShortName">A_Enable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/cpu/mem_controller/bram_instruction/\gen_bram(0)\/bram/A_Addr" type="array">
+      <obj_property name="ElementShortName">A_Addr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">A_Addr[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/cpu/mem_controller/bram_instruction/\gen_bram(0)\/bram/A_RData" type="array">
+      <obj_property name="ElementShortName">A_RData[31:0]</obj_property>
+      <obj_property name="ObjectShortName">A_RData[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/cpu/mem_controller/bram_instruction/data_out" type="array">
+      <obj_property name="ElementShortName">data_out[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_out[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/cpu/mem_controller/bram_instruction/data_adr" type="array">
+      <obj_property name="ElementShortName">data_adr[15:0]</obj_property>
+      <obj_property name="ObjectShortName">data_adr[15:0]</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider69">
       <obj_property name="label">ALU</obj_property>

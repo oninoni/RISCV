@@ -8,11 +8,7 @@ entity mem_controller is
     generic (
         -- Parameters for the Instruction Memory
         BRAM_COUNT : integer := 4;
-        INIT_VALUE : std_logic_vector := (others => '0');
-
-        -- Parameters for the GPIO Memory Interface
-        GPIO_IN_COUNT : integer := 0;
-        GPIO_OUT_COUNT : integer := 0
+        INIT_VALUE : std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0')
     );
     Port (
         clk : in STD_LOGIC;
@@ -29,8 +25,8 @@ entity mem_controller is
         instruction : out STD_LOGIC_VECTOR (31 downto 0);
 
         -- GPIO Memory Interface
-        gpio_in : in STD_LOGIC_VECTOR (GPIO_IN_COUNT - 1 downto 0);
-        gpio_out : out STD_LOGIC_VECTOR (GPIO_OUT_COUNT - 1 downto 0)
+        gpio_in : in STD_LOGIC_VECTOR (255 downto 0);
+        gpio_out : out STD_LOGIC_VECTOR (255 downto 0)
     );
 end mem_controller;
 
@@ -39,160 +35,54 @@ end mem_controller;
 -- FPGA has 50 36kb RAM blocks
 -- We will need some for other stuff, so only a part will be used for general purpose RAM / Instruction Memory
 -- Other RAM Mapped devices are added later.
+--
+-- Current Memory Map:
+-- 0x0000_0000 - 0x0000_FFFF: Instruction Memory (16 x 32kb BRAMs)
+-- 0x0001_0000 - 0x0001_01FF: GPIO Memory Interface (2x 256b IO Registers)
+-- 0x0001_0200 - 0x0001_FFFF: Reserved for GPIO Memory Expansion
+-- 0x0002_0000 - 0xFFFE_FFFF: Unused
+-- 0xFFFF_0000 - 0xFFFF_FFFF: Stack Memory (16 x 32kb BRAMs)
 
 architecture Behavioral of mem_controller is
+    signal read_enable : std_logic;
     signal write_enable : std_logic_vector(3 downto 0);
+
     signal ram_rd_internal : std_logic_vector(31 downto 0);
     signal ram_wd_internal : std_logic_vector(31 downto 0);
 
-    constant INIT_VALUE : std_logic_vector(32767 downto 0) := (
-        X"00000093",
-        X"00000193",
-        X"00000213",
-        X"00000293",
-        X"00000313",
-        X"00000393",
-        X"00000413",
-        X"00000493",
-        X"00000513",
-        X"00000593",
-        X"00000613",
-        X"00000693",
-        X"00000713",
-        X"00000793",
-        X"00000813",
-        X"00000893",
-        X"00000913",
-        X"00000993",
-        X"00000a13",
-        X"00000a93",
-        X"00000b13",
-        X"00000b93",
-        X"00000c13",
-        X"00000c93",
-        X"00000d13",
-        X"00000d93",
-        X"00000e13",
-        X"00000e93",
-        X"00000f13",
-        X"00000f93",
-        X"02000537",
-        X"0aa00593",
-        X"00b52023",
-        X"0f0000ef",
-        X"0000006f",
-        X"fe010113",
-        X"00112e23",
-        X"00812c23",
-        X"02010413",
-        X"00050793",
-        X"fef407a3",
-        X"fef44703",
-        X"00a00793",
-        X"00f71663",
-        X"00d00513",
-        X"fd9ff0ef",
-        X"020007b7",
-        X"00878793",
-        X"fef44703",
-        X"00e7a023",
-        X"00000013",
-        X"01c12083",
-        X"01812403",
-        X"02010113",
-        X"00008067",
-        X"fe010113",
-        X"00112e23",
-        X"00812c23",
-        X"02010413",
-        X"fea42623",
-        X"01c0006f",
-        X"fec42783",
-        X"00178713",
-        X"fee42623",
-        X"0007c783",
-        X"00078513",
-        X"f85ff0ef",
-        X"fec42783",
-        X"0007c783",
-        X"fe0790e3",
-        X"00000013",
-        X"00000013",
-        X"01c12083",
-        X"01812403",
-        X"02010113",
-        X"00008067",
-        X"fe010113",
-        X"00812e23",
-        X"02010413",
-        X"fe042623",
-        X"0100006f",
-        X"fec42783",
-        X"00178793",
-        X"fef42623",
-        X"fec42703",
-        X"0003d7b7",
-        X"08f78793",
-        X"fee7d4e3",
-        X"00000013",
-        X"00000013",
-        X"01c12403",
-        X"02010113",
-        X"00008067",
-        X"ff010113",
-        X"00112623",
-        X"00812423",
-        X"01010413",
-        X"020007b7",
-        X"00478793",
-        X"00001737",
-        X"45870713",
-        X"00e7a023",
-        X"1a800513",
-        X"f41ff0ef",
-        X"f91ff0ef",
-        X"ff5ff06f",
-        X"6c6c6568",
-        X"6f77206f",
-        X"0a646c72",
-        X"00000000",
-        others => '0'
-    );
+    signal ins_en : std_logic;
+    signal gpio_en : std_logic;
+    signal stack_en : std_logic;
 begin
-
     -- Initialize the Instruction Memory
     bram_instruction : entity work.bram_instruction
     generic map (
-        BRAM_COUNT => 4,
-        INIT_VALUE => (INIT_VALUE, others => '0')
+        BRAM_COUNT => BRAM_COUNT,
+        INIT_VALUE => INIT_VALUE
     ) port map (
         data_clk => not clk,
-        data_en => '1', -- TODO: Only enable when needed.
+        data_en => ins_en,
 
         data_wr => write_enable,
-        data_adr => res(13 downto 0),
+        data_adr => res(15 downto 0),
 
         data_out => ram_rd_internal,
         data_in => ram_wd_internal,
 
         instruction_clk => clk,
-        instruction_adr => pc(13 downto 0),
+        instruction_adr => pc(15 downto 0),
         instruction_out => instruction
     );
 
     -- GPIO Memory Interface
     vram_gpio : entity work.vram_gpio
-    generic map (
-        GPIO_IN_COUNT => GPIO_IN_COUNT,
-        GPIO_OUT_COUNT => GPIO_OUT_COUNT,
-        GPIO_START_ADDRESS => GPIO_START_ADDRESS
-    ) port map (
+    port map (
         data_clk => not clk,
         res_n => res_n,
-        data_en => '1', -- TODO: Only enable when needed.
+        data_en => gpio_en,
 
         data_wr => write_enable,
-        data_adr => res(13 downto 0),
+        data_adr => res(8 downto 0),
 
         data_out => ram_rd_internal,
         data_in => ram_wd_internal,
@@ -200,6 +90,48 @@ begin
         gpio_in => gpio_in,
         gpio_out => gpio_out
     );
+
+    -- Stack Memory
+    bram_stack : entity work.bram_instruction
+    generic map (
+        BRAM_COUNT => 16,
+        INIT_VALUE => (others => '0')
+    ) port map (
+        data_clk => not clk,
+        data_en => stack_en,
+
+        data_wr => write_enable,
+        data_adr => res(15 downto 0),
+
+        data_out => ram_rd_internal,
+        data_in => ram_wd_internal,
+
+        instruction_clk => '0',
+        instruction_adr => x"0000",
+        instruction_out => open
+    );
+
+    -- Memory Map Control
+    process(all) begin
+        case (res(31 downto 16)) is
+        when x"0000" => -- Instruction Memory
+            ins_en <= read_enable;
+            gpio_en <= '0';
+            stack_en <= '0';
+        when x"0001" => -- GPIO Memory
+            ins_en <= '0';
+            gpio_en <= read_enable;
+            stack_en <= '0';
+        when x"FFFF" => -- Stack Memory
+            ins_en <= '0';
+            gpio_en <= '0';
+            stack_en <= read_enable;
+        when others =>
+            ins_en <= '0';
+            gpio_en <= '0';
+            stack_en <= '0';
+        end case;
+    end process;
 
     -- Data Read Masking
     process(all) begin
@@ -209,76 +141,96 @@ begin
             when "000" => -- LB
                 case (res(1 downto 0)) is
                 when "00" => -- 0-7
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 8 => ram_rd_internal(7),
                                 7 downto 0 => ram_rd_internal(7 downto 0));
                 when "01" => -- 8-15
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 8 => ram_rd_internal(15),
                                 7 downto 0 => ram_rd_internal(15 downto 8));
                 when "10" => -- 16-23
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 8 => ram_rd_internal(23),
                                 7 downto 0 => ram_rd_internal(23 downto 16));
                 when "11" => -- 24-31
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 8 => ram_rd_internal(31),
                                 7 downto 0 => ram_rd_internal(31 downto 24));
 
                 when others => -- Misaligned Access (Exception)
+                    read_enable <= '0';
                     ram_rd <= (others => '0');
                 end case;
             when "001" => -- LH
                 case(res(1 downto 0)) is
                 when "00" => -- 0-15
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 16 => ram_rd_internal(15),
                                 15 downto 0 => ram_rd_internal(15 downto 0));
                 when "10" => -- 16-31
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 16 => ram_rd_internal(31),
                                 15 downto 0 => ram_rd_internal(31 downto 16));
 
                 when others => -- Misaligned Access (Exception)
+                    read_enable <= '0';
                     ram_rd <= (others => '0');
                 end case;
             when "010" => -- LW
                 case (res(1 downto 0)) is
                 when "00" => -- 0-31
+                    read_enable <= '1';
                     ram_rd <= ram_rd_internal;
 
                 when others => -- Misaligned Access (Exception)
+                    read_enable <= '0';
                     ram_rd <= (others => '0');
                 end case;
             when "100" => -- LBU
                 case (res(1 downto 0)) is
                 when "00" => -- 0-7
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 8 => '0',
                                 7 downto 0 => ram_rd_internal(7 downto 0));
                 when "01" => -- 8-15
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 8 => '0',
                                 7 downto 0 => ram_rd_internal(15 downto 8));
                 when "10" => -- 16-23
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 8 => '0',
                                 7 downto 0 => ram_rd_internal(23 downto 16));
                 when "11" => -- 24-31
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 8 => '0',
                                 7 downto 0 => ram_rd_internal(31 downto 24));
 
                 when others => -- Misaligned Access (Exception)
+                    read_enable <= '0';
                     ram_rd <= (others => '0');
                 end case;
             when "101" => -- LHU
                 case(res(1 downto 0)) is
                 when "00" => -- 0-15
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 16 => '0',
                                 15 downto 0 => ram_rd_internal(15 downto 0));
                 when "10" => -- 16-31
+                    read_enable <= '1';
                     ram_rd <= ( 31 downto 16 => '0',
                                 15 downto 0 => ram_rd_internal(31 downto 16));
 
                 when others => -- Misaligned Access (Exception)
+                    read_enable <= '0';
                     ram_rd <= (others => '0');
                 end case;
 
             when others =>
+                read_enable <= '0';
                 ram_rd <= (others => '0');
             end case;
         when others =>
+            read_enable <= '0';
             ram_rd <= (others => '0');
         end case;
     end process;
@@ -349,5 +301,4 @@ begin
             ram_wd_internal <= (others => '0');
         end case;
     end process;
-
 end Behavioral;
