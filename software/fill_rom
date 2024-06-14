@@ -1,0 +1,15 @@
+
+#!/bin/bash
+
+grep "init_data" $2 > /dev/null
+if [[ -e $1 && $? -eq 0 ]]
+then
+  echo "filling $1 into $2"
+  
+  grep -B 1000 "init_data" $2 > $1.vhd
+  cat $1 | od  -v -t x4 -w4 -An | sed 's/^/x"/g' | sed 's/$/",/g' |tr -d ' '  >> $1.vhd
+  grep -A 1000 "init_data" $2 >> $1.vhd
+else
+  echo "use fill_rom foo.bin ROM_template.bin"
+fi
+

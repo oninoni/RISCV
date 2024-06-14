@@ -40,8 +40,7 @@ end mem_controller;
 -- 0x0000_0000 - 0x0000_FFFF: Instruction Memory (16 x 32kb BRAMs)
 -- 0x0001_0000 - 0x0001_01FF: GPIO Memory Interface (2x 256b IO Registers)
 -- 0x0001_0200 - 0x0001_FFFF: Reserved for GPIO Memory Expansion
--- 0x0002_0000 - 0xFFFE_FFFF: Unused
--- 0xFFFF_0000 - 0xFFFF_FFFF: Stack Memory (16 x 32kb BRAMs)
+-- 0x0002_0000 - 0xFFFF_FFFF: Unused
 
 architecture Behavioral of mem_controller is
     signal read_enable : std_logic;
@@ -49,10 +48,8 @@ architecture Behavioral of mem_controller is
 
     signal ins_en : std_logic;
     signal gpio_en : std_logic;
-    signal stack_en : std_logic;
     signal ram_rd_instruction : std_logic_vector(31 downto 0);
     signal ram_rd_gpio : std_logic_vector(31 downto 0);
-    signal ram_rd_stack : std_logic_vector(31 downto 0);
 
     signal write_enable : std_logic_vector(3 downto 0);
     signal ram_wd_internal : std_logic_vector(31 downto 0);
@@ -95,46 +92,20 @@ begin
         gpio_out => gpio_out
     );
 
-    -- Stack Memory
-    bram_stack : entity work.bram_instruction
-    generic map (
-        BRAM_COUNT => 16,
-        INIT_VALUE => (others => '0')
-    ) port map (
-        data_clk => not clk,
-        data_en => stack_en,
-
-        data_wr => write_enable,
-        data_adr => res(15 downto 0),
-
-        data_out => ram_rd_stack,
-        data_in => ram_wd_internal,
-
-        instruction_clk => '0',
-        instruction_adr => x"0000",
-        instruction_out => open
-    );
-
     -- Memory Map Control
     process(all) begin
-        case (res(31 downto 16)) is
-        when x"0000" => -- Instruction Memory
+        ins_en <= '0';
+        gpio_en <= '0';
+
+        -- Instruction Memory
+        if res(31 downto 16) = x"0000" then
             ins_en <= read_enable or write_enable(3) or write_enable(2) or write_enable(1) or write_enable(0);
-            gpio_en <= '0';
-            stack_en <= '0';
-        when x"0001" => -- GPIO Memory
-            ins_en <= '0';
+
+        -- GPIO Memory
+        elsif res(31 downto 16) = x"0001" then
             gpio_en <= read_enable or write_enable(3) or write_enable(2) or write_enable(1) or write_enable(0);
-            stack_en <= '0';
-        when x"FFFF" => -- Stack Memory
-            ins_en <= '0';
-            gpio_en <= '0';
-            stack_en <= read_enable or write_enable(3) or write_enable(2) or write_enable(1) or write_enable(0);
-        when others =>
-            ins_en <= '0';
-            gpio_en <= '0';
-            stack_en <= '0';
-        end case;
+
+        end if;
     end process;
 
     -- Data read Multiplexer
@@ -144,8 +115,6 @@ begin
             ram_rd_internal <= ram_rd_instruction;
         when x"0001" => -- GPIO Memory
             ram_rd_internal <= ram_rd_gpio;
-        when x"FFFF" => -- Stack Memory
-            ram_rd_internal <= ram_rd_stack;
         when others =>
             ram_rd_internal <= (others => '0');
         end case;
@@ -286,11 +255,11 @@ begin
             when "001" => -- SH
                 case(res(1 downto 0)) is
                 when "00" => -- 0-15
-                    write_enable <= "1100";
+                    write_enable <= "0011";
                     ram_wd_internal <= (31 downto 16 => '0',
                                         15 downto 0 => rd2(15 downto 0));
                 when "10" => -- 16-31
-                    write_enable <= "0011";
+                    write_enable <= "1100";
                     ram_wd_internal <= (31 downto 16 => rd2(15 downto 0),
                                         15 downto 0 => '0');
 

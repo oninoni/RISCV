@@ -5,6 +5,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity reg_file is
+    generic (
+        STACK_POINTER_INIT : std_logic_vector(31 downto 0) := x"00010000"
+    );
     Port (
         clk : in STD_LOGIC;
         res_n : in STD_LOGIC;
@@ -26,6 +29,20 @@ entity reg_file is
         ram_rd : in STD_LOGIC_VECTOR (31 downto 0)
     );
 end reg_file;
+
+-- RISC V Register File:
+-- x0 / zero: Hardwired zero
+-- x1 / ra: Return address
+-- x2 / sp: Stack pointer
+-- x3 / gp: Global pointer
+-- x4 / tp: Thread pointer
+-- x5-7 / t0-2: Temporaries
+-- x8 / s0 / fp: Saved register / frame pointer
+-- x9 / s1: Saved register
+-- x10-11 / a0-1: Function arguments / return values
+-- x12-17 / a2-7: Function arguments
+-- x18-27 / s2-11: Saved registers
+-- x28-31 / t3-6: Temporaries
 
 architecture Behavioral of reg_file is
     type reg_array is array (1 to 31) of std_logic_vector(31 downto 0);
@@ -81,6 +98,9 @@ begin
     begin
         if (res_n = '0') then -- Reset
             regs <= (others => (others => '0'));
+
+            -- Reset Stack Pointer
+            regs(2) <= STACK_POINTER_INIT;
         elsif (rising_edge(clk)) then
             if rd /= "00000" then -- Ignore Hard Zero
                 case (opcode) is

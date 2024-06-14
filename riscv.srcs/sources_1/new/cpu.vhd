@@ -7,7 +7,9 @@ use ieee.numeric_std.all;
 entity cpu is
     generic (
         BRAM_COUNT : integer := 4;
-        INIT_VALUE : std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0')
+        INIT_VALUE : std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0');
+
+        STACK_POINTER_INIT : std_logic_vector(31 downto 0) := x"00010000"
     );
     port (
         clk : in std_logic;
@@ -81,6 +83,9 @@ begin
 
     -- Register File
     reg_file: entity work.reg_file
+    generic map (
+        STACK_POINTER_INIT => STACK_POINTER_INIT
+    )
     port map (
         clk => clk,
         res_n => res_n,
