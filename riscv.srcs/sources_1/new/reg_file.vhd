@@ -30,6 +30,8 @@ end reg_file;
 architecture Behavioral of reg_file is
     type reg_array is array (1 to 31) of std_logic_vector(31 downto 0);
     signal regs : reg_array := (others => (others => '0'));
+
+    signal pc_4_stored : std_logic_vector(31 downto 0);
 begin
 
     -- Read register file
@@ -89,9 +91,9 @@ begin
                 when "0000011" => -- I-Type (Load)
                     regs(to_integer(unsigned(rd))) <= ram_rd;
                 when "1101111" => -- J-Type (JAL)
-                    regs(to_integer(unsigned(rd))) <= pc_4;
+                    regs(to_integer(unsigned(rd))) <= pc_4_stored;
                 when "1100111" => -- I-Type (JALR)
-                    regs(to_integer(unsigned(rd))) <= pc_4;
+                    regs(to_integer(unsigned(rd))) <= pc_4_stored;
                 when "0110111" => -- U-Type (LUI)
                     regs(to_integer(unsigned(rd))) <= imm;
                 when "0010111" => -- U-Type (AUIPC)
@@ -100,6 +102,16 @@ begin
                     null;
                 end case;
             end if;
+        end if;
+    end process;
+
+    -- Store pc_4 on falling edge, so it is still the previous value on rising edge
+    process(clk, res_n)
+    begin
+        if (res_n = '0') then -- Reset
+            pc_4_stored <= (others => '0');
+        elsif falling_edge(clk) then
+            pc_4_stored <= pc_4;
         end if;
     end process;
 end Behavioral;

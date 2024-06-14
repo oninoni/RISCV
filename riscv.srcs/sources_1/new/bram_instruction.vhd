@@ -52,65 +52,62 @@ architecture Behavioral of bram_instruction is
 
         return init_ut;
     end function;
+
+    signal bram_data_en : std_logic_vector(BRAM_COUNT - 1 downto 0);
+    signal bram_instruction_en : std_logic_vector(BRAM_COUNT - 1 downto 0);
+
+    type std_logic_aoa is array (natural range <>) of std_logic_vector;
+
+    signal bram_data_out : std_logic_aoa(0 to BRAM_COUNT - 1)(31 downto 0);
+    signal bram_instruction_out : std_logic_aoa(0 to BRAM_COUNT - 1)(31 downto 0);
 begin
     -- Generate the BRAMs with the correct enable signals.
     gen_bram : for i in 0 to BRAM_COUNT - 1 generate
-        signal bram_data_en : std_logic := '0';
-        signal bram_instruction_en : std_logic := '0';
-
-        signal bram_data_out : std_logic_vector(31 downto 0);
-        signal bram_instruction_out : std_logic_vector(31 downto 0);
     begin
-        gen_enable: if (BRAM_COUNT = 1) generate -- Special case for single BRAM
-            bram_data_en <= data_en;
-
-            bram_instruction_en <= '1';
-        else generate
-            bram_data_en <= data_en
-                when (data_adr((12 + BRAM_WIDTH - 1) downto 12) = std_logic_vector(to_unsigned(i, BRAM_WIDTH)))
-                else '0';
-
-            bram_instruction_en <= '1'
-                when (instruction_adr((12 + BRAM_WIDTH - 1) downto 12) = std_logic_vector(to_unsigned(i, BRAM_WIDTH)))
-                else '0';
-        end generate;
-
         -- Instantiate the BRAMs
         bram : entity work.bram
         generic map (
             INIT_VALUE => untangle_init(INIT_VALUE(32768 * i to 32768 * (i + 1) - 1))
         ) port map (
             A_clk => data_clk,
-            A_Enable => bram_data_en,
+            A_Enable => bram_data_en(i),
 
             A_Write => data_wr,
             A_Addr => data_adr(11 downto 2),
 
-            A_RData => bram_data_out,
+            A_RData => bram_data_out(i),
             A_WData => data_in,
 
             B_clk => instruction_clk,
-            B_Enable => bram_instruction_en,
+            B_Enable => bram_instruction_en(i),
 
             B_Write => "0000",
             B_Addr => instruction_adr(11 downto 2),
 
-            B_RData => bram_instruction_out,
+            B_RData => bram_instruction_out(i),
             B_WData => (others => '0')
         );
-
-        -- Connect the output signals with tri-state buffers.
-        gen_output: if (BRAM_COUNT = 1) generate -- Special case for single BRAM
-            data_out <= bram_data_out;
-            instruction_out <= bram_instruction_out;
-        else generate
-            data_out <= bram_data_out
-                when (data_adr((12 + BRAM_WIDTH - 1) downto 12) = std_logic_vector(to_unsigned(i, BRAM_WIDTH)))
-                else (others => 'Z');
-
-            instruction_out <= bram_instruction_out
-                when (instruction_adr((12 + BRAM_WIDTH - 1) downto 12) = std_logic_vector(to_unsigned(i, BRAM_WIDTH)))
-                else (others => 'Z');
-        end generate;
     end generate;
+
+    -- Generate the enable signals for the BRAMs.
+    process(all)
+    begin
+        bram_data_en <= (others => '0');
+        bram_instruction_en <= (others => '0');
+
+        bram_data_en(to_integer(unsigned(data_adr(11 + BRAM_WIDTH downto 12)))) <= data_en;
+        bram_instruction_en(to_integer(unsigned(instruction_adr(11 + BRAM_WIDTH downto 12)))) <= '1';
+    end process;
+
+    -- Multiplex the output of the BRAMs.
+    process(all)
+    begin
+        if (data_en = '1') then
+            data_out <= bram_data_out(to_integer(unsigned(data_adr(11 + BRAM_WIDTH downto 12))));
+        else
+            data_out <= (others => '0');
+        end if;
+
+        instruction_out <= bram_instruction_out(to_integer(unsigned(instruction_adr(11 + BRAM_WIDTH downto 12))));
+    end process;
 end Behavioral;
