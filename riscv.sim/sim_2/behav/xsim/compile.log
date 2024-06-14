@@ -1,0 +1,26 @@
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/Users/jan/Vivado/riscv/riscv.srcs/sources_1/new/bram.vhd" into library xil_defaultlib
+INFO: [VRFC 10-3107] analyzing entity 'bram'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/Users/jan/Vivado/riscv/riscv.srcs/sources_1/new/bram_instruction.vhd" into library xil_defaultlib
+INFO: [VRFC 10-3107] analyzing entity 'bram_instruction'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd" into library xil_defaultlib
+INFO: [VRFC 10-3107] analyzing entity 'bram_instruction_tb'
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:14]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:15]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:16]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:17]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:18]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:19]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:20]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:21]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:22]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:23]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:24]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:25]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:26]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:27]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:28]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:29]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:30]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:31]
+ERROR: [VRFC 10-3758] type 'std_ulogic' does not match with a string literal [C:/Users/jan/Vivado/riscv/riscv.srcs/sim_2/imports/new/bram_instruction_tb.vhd:32]
+INFO: [#UNDEF] Sorry, too many errors..
