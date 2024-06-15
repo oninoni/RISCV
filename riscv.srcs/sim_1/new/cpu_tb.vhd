@@ -11,7 +11,7 @@ architecture Behavioral of cpu_tb is
     signal clk : std_logic := '0';
     signal res_n : std_logic := '1';
 
-    signal sw : std_logic_vector(15 downto 0) := (others => '0');
+    signal sw : std_logic_vector(15 downto 0) := "0011001100110011";
     signal LED : std_logic_vector(15 downto 0);
 begin
     top : entity work.top
@@ -20,7 +20,12 @@ begin
         btnC => res_n,
 
         sw => sw,
-        LED => LED
+        LED => LED,
+
+        btnU => '0',
+        btnD => '0',
+        btnL => '0',
+        btnR => '0'
     );
 
     clk <= not clk after 200 ns;

@@ -12,7 +12,7 @@ entity vram_gpio is
         data_en : in std_logic;
 
         data_wr : in std_logic_vector(3 downto 0);
-        data_adr : in std_logic_vector(8 downto 0);
+        data_adr : in std_logic_vector(5 downto 0);
 
         data_out : out std_logic_vector(31 downto 0);
         data_in : in std_logic_vector(31 downto 0);
@@ -22,12 +22,14 @@ entity vram_gpio is
     );
 end vram_gpio;
 
--- Memory maps input and output GPIOs to the data bus.
+-- Current Memory Map:
+-- 0b0_0000 -> 0b0_1111: Output GPIOs
+-- 0b1_0000 -> 0b1_1111: Input GPIOs
 
 architecture Behavioral of vram_gpio is
     signal trunc_addr : unsigned(3 downto 0);
 begin
-    trunc_addr <= unsigned(data_adr(8 downto 5));
+    trunc_addr <= unsigned(data_adr(5 downto 2));
 
     -- Read data onto the data bus
     process(data_clk, res_n) begin
@@ -49,7 +51,7 @@ begin
                         to_integer(unsigned(trunc_addr(2 downto 0))) * 32)
                     ;
                 end if;
-            else 
+            else
                 data_out <= (others => '0');
             end if;
         end if;
@@ -69,21 +71,21 @@ begin
                             to_integer(unsigned(trunc_addr(2 downto 0))) * 32)
                         <= data_in(7 downto 0);
                     end if;
-    
+
                     if (data_wr(1) = '1') then
                         gpio_out(
                             to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 15 downto
                             to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 8)
                         <= data_in(15 downto 8);
                     end if;
-    
+
                     if (data_wr(2) = '1') then
                         gpio_out(
                             to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 23 downto
                             to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 16)
                         <= data_in(23 downto 16);
                     end if;
-    
+
                     if (data_wr(3) = '1') then
                         gpio_out(
                             to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 31 downto
@@ -91,7 +93,7 @@ begin
                         <= data_in(31 downto 24);
                     end if;
                 end if;
-            end if; 
+            end if;
         end if;
     end process;
 end Behavioral;

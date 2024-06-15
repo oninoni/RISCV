@@ -7,7 +7,7 @@ use ieee.math_real.all;
 
 entity bram_instruction is
     generic (
-        BRAM_COUNT: integer := 1;
+        BRAM_COUNT: integer := 4;
         BRAM_WIDTH: integer := integer(ceil(log2(real(BRAM_COUNT))));
 
         INIT_VALUE: std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0')

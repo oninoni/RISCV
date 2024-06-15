@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "Copying $1 into $2"
+
+rm $2
+cat $1 | od  -v -t x4 -w4 -An | tr -d ' '  >> $2

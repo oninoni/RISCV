@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MemInfo Version="1" Minor="0">
+  <Processor Endianness="Little" InstPath="cpu/mem_controller/bram_instruction/gen_bram[0].bram">
+    <AddressSpace Name="core_0_bram" Begin="0" End="1023">
+      <BusBlock>
+        <BitLane MemType="RAMB32" Placement="X0Y0">
+          <DataWidth MSB="31" LSB="0"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+      </BusBlock>
+    </AddressSpace>
+  </Processor>
+  <Processor Endianness="Little" InstPath="cpu/mem_controller/bram_instruction/gen_bram[1].bram">
+    <AddressSpace Name="core_1_bram" Begin="0" End="1023">
+      <BusBlock>
+        <BitLane MemType="RAMB32" Placement="X0Y3">
+          <DataWidth MSB="31" LSB="0"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+      </BusBlock>
+    </AddressSpace>
+  </Processor>
+  <Processor Endianness="Little" InstPath="cpu/mem_controller/bram_instruction/gen_bram[2].bram">
+    <AddressSpace Name="core_2_bram" Begin="0" End="1023">
+      <BusBlock>
+        <BitLane MemType="RAMB32" Placement="X0Y2">
+          <DataWidth MSB="31" LSB="0"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+      </BusBlock>
+    </AddressSpace>
+  </Processor>
+  <Processor Endianness="Little" InstPath="cpu/mem_controller/bram_instruction/gen_bram[3].bram">
+    <AddressSpace Name="core_3_bram" Begin="0" End="1023">
+      <BusBlock>
+        <BitLane MemType="RAMB32" Placement="X0Y1">
+          <DataWidth MSB="31" LSB="0"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+      </BusBlock>
+    </AddressSpace>
+  </Processor>
+  <Processor Endianness="Little" InstPath="cpu/mem_controller/bram_instruction/gen_bram[4].bram">
+    <AddressSpace Name="core_4_bram" Begin="0" End="1023">
+      <BusBlock>
+        <BitLane MemType="RAMB32" Placement="X0Y7">
+          <DataWidth MSB="31" LSB="0"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+      </BusBlock>
+    </AddressSpace>
+  </Processor>
+  <Processor Endianness="Little" InstPath="cpu/mem_controller/bram_instruction/gen_bram[5].bram">
+    <AddressSpace Name="core_5_bram" Begin="0" End="1023">
+      <BusBlock>
+        <BitLane MemType="RAMB32" Placement="X0Y5">
+          <DataWidth MSB="31" LSB="0"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+      </BusBlock>
+    </AddressSpace>
+  </Processor>
+  <Processor Endianness="Little" InstPath="cpu/mem_controller/bram_instruction/gen_bram[6].bram">
+    <AddressSpace Name="core_6_bram" Begin="0" End="1023">
+      <BusBlock>
+        <BitLane MemType="RAMB32" Placement="X0Y6">
+          <DataWidth MSB="31" LSB="0"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+      </BusBlock>
+    </AddressSpace>
+  </Processor>
+  <Processor Endianness="Little" InstPath="cpu/mem_controller/bram_instruction/gen_bram[7].bram">
+    <AddressSpace Name="core_7_bram" Begin="0" End="1023">
+      <BusBlock>
+        <BitLane MemType="RAMB32" Placement="X0Y4">
+          <DataWidth MSB="31" LSB="0"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+      </BusBlock>
+    </AddressSpace>
+  </Processor>
+<Config>
+  <Option Name="Part" Val="xcvu9p-flga2104-2L-e"/>
+</Config>
+<DRC>
+  <Rule Name="RDADDRCHANGE" Val="false"/>
+</DRC>
+</MemInfo>

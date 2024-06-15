@@ -3,11 +3,13 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 entity mem_controller is
     generic (
-        -- Parameters for the Instruction Memory
-        BRAM_COUNT : integer := 4;
+        BRAM_COUNT: integer := 4;
+        BRAM_WIDTH: integer := integer(ceil(log2(real(BRAM_COUNT))));
+
         INIT_VALUE : std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0')
     );
     Port (
@@ -38,8 +40,9 @@ end mem_controller;
 --
 -- Current Memory Map:
 -- 0x0000_0000 - 0x0000_FFFF: Instruction Memory (16 x 32kb BRAMs)
--- 0x0001_0000 - 0x0001_01FF: GPIO Memory Interface (2x 256b IO Registers)
--- 0x0001_0200 - 0x0001_FFFF: Reserved for GPIO Memory Expansion
+-- 0x0001_0000 - 0x0001_000F: GPIO_OUT (8 * 32bit GPIO Banks)
+-- 0x0001_0020 - 0x0001_002F: GPIO_IN (8 * 32bit GPIO Banks)
+-- 0x0001_0030 - 0x0001_FFFF: Reserved for GPIO Memory Expansion
 -- 0x0002_0000 - 0xFFFF_FFFF: Unused
 
 architecture Behavioral of mem_controller is
@@ -65,13 +68,13 @@ begin
         data_en => ins_en,
 
         data_wr => write_enable,
-        data_adr => res(15 downto 0),
+        data_adr => res(11 + BRAM_WIDTH downto 0),
 
         data_out => ram_rd_instruction,
         data_in => ram_wd_internal,
 
         instruction_clk => clk,
-        instruction_adr => pc(15 downto 0),
+        instruction_adr => pc(11 + BRAM_WIDTH downto 0),
         instruction_out => instruction
     );
 
@@ -83,7 +86,7 @@ begin
         data_en => gpio_en,
 
         data_wr => write_enable,
-        data_adr => res(8 downto 0),
+        data_adr => res(5 downto 0),
 
         data_out => ram_rd_gpio,
         data_in => ram_wd_internal,

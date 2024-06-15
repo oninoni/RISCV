@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 
 entity reg_file is
     generic (
-        STACK_POINTER_INIT : std_logic_vector(31 downto 0) := x"00010000"
+        STACK_POINTER_INIT : std_logic_vector(31 downto 0) := x"00000000"
     );
     Port (
         clk : in STD_LOGIC;

@@ -1,0 +1,12 @@
+Example using updatemem:
+
+updatemem
+	-meminfo manycore.mmi
+	-data row_test3.mem
+	-bit manycore_bitstream.bit
+	-proc cm_i/app_i/subcore_i/uut/uram_clock_region_gen_bot[0]
+		.RISCV_quadrow_cluster_bot_inst/y_cluster_gen[0]
+		.RISCV_row_cluster_inst/RISCV_minirow_inst0/x_cluster_gen[0]
+		.RISCV_core_top_inst/instr_and_data_mem/RAM_reg
+	-force
+	-out new_bitstream.bit
