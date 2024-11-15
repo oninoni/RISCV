@@ -1,4 +1,15 @@
--- Jan Ziegler
+--------------------------------
+--                            --
+--         RISC-V CPU         --
+--        Single Cycle        --
+--                            --
+--       by Jan Ziegler       --
+--                            --
+--------------------------------
+
+--------------------------------
+--    Arithmetic Logic Unit   --
+--------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -11,11 +22,12 @@ entity alu is
         funct3 : in STD_LOGIC_VECTOR (2 downto 0);
         funct7 : in STD_LOGIC_VECTOR (6 downto 0);
 
+        rd1 : in STD_LOGIC_VECTOR (31 downto 0);
+        rd2 : in STD_LOGIC_VECTOR (31 downto 0);
+    
         pc : in STD_LOGIC_VECTOR (31 downto 0);
         imm : in STD_LOGIC_VECTOR (31 downto 0);
 
-        rd1 : in STD_LOGIC_VECTOR (31 downto 0);
-        rd2 : in STD_LOGIC_VECTOR (31 downto 0);
         res : out STD_LOGIC_VECTOR (31 downto 0)
     );
 end alu;
@@ -124,6 +136,8 @@ begin
         when "1100111" => -- I-Type (JALR, res = address)
             res <= std_logic_vector(signed(rd1) + signed(imm));
 
+        when "0110111" => -- U-Type (LUI, res = imm)
+            res <= imm;
         when "0010111" => -- U-Type (AUIPC, res = imm)
             res <= std_logic_vector(signed(unsigned(pc)) + signed(imm));
 

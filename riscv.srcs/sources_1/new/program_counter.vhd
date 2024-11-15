@@ -1,4 +1,15 @@
--- Jan Ziegler
+--------------------------------
+--                            --
+--         RISC-V CPU         --
+--        Single Cycle        --
+--                            --
+--       by Jan Ziegler       --
+--                            --
+--------------------------------
+
+--------------------------------
+--       Program Counter      --
+--------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -11,11 +22,11 @@ entity program_counter is
 
         opcode : in STD_LOGIC_VECTOR (6 downto 0);
 
-        pc : out STD_LOGIC_VECTOR (31 downto 0);
-        pc_4 : out STD_LOGIC_VECTOR (31 downto 0);
-
         branch : in STD_LOGIC;
-        res : in STD_LOGIC_VECTOR (31 downto 0)
+        res : in STD_LOGIC_VECTOR (31 downto 0);
+
+        pc : out STD_LOGIC_VECTOR (31 downto 0);
+        pc_4 : out STD_LOGIC_VECTOR (31 downto 0)
     );
 end program_counter;
 

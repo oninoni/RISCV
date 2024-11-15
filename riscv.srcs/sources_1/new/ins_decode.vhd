@@ -1,4 +1,15 @@
--- Jan Ziegler
+--------------------------------
+--                            --
+--         RISC-V CPU         --
+--        Single Cycle        --
+--                            --
+--       by Jan Ziegler       --
+--                            --
+--------------------------------
+
+--------------------------------
+--     Instruction Decoder    --
+--------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

@@ -1,4 +1,15 @@
--- Jan Ziegler
+--------------------------------
+--                            --
+--         RISC-V CPU         --
+--        Single Cycle        --
+--                            --
+--       by Jan Ziegler       --
+--                            --
+--------------------------------
+
+--------------------------------
+--        Register File       --
+--------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -16,17 +27,14 @@ entity reg_file is
 
         rs1 : in STD_LOGIC_VECTOR (4 downto 0);
         rs2 : in STD_LOGIC_VECTOR (4 downto 0);
-
-        imm : in STD_LOGIC_VECTOR (31 downto 0);
-        pc_4 : in STD_LOGIC_VECTOR (31 downto 0);
-
         rd : in STD_LOGIC_VECTOR (4 downto 0);
+
+        pc_4 : in STD_LOGIC_VECTOR (31 downto 0);
         res : in STD_LOGIC_VECTOR (31 downto 0);
+        ram_rd : in STD_LOGIC_VECTOR (31 downto 0);
 
         rd1 : out STD_LOGIC_VECTOR (31 downto 0);
-        rd2 : out STD_LOGIC_VECTOR (31 downto 0);
-
-        ram_rd : in STD_LOGIC_VECTOR (31 downto 0)
+        rd2 : out STD_LOGIC_VECTOR (31 downto 0)
     );
 end reg_file;
 
@@ -108,14 +116,17 @@ begin
                     regs(to_integer(unsigned(rd))) <= res;
                 when "0010011" => -- I-Type (ALU Imm)
                     regs(to_integer(unsigned(rd))) <= res;
+
                 when "0000011" => -- I-Type (Load)
                     regs(to_integer(unsigned(rd))) <= ram_rd;
+
                 when "1101111" => -- J-Type (JAL)
                     regs(to_integer(unsigned(rd))) <= pc_4_stored;
                 when "1100111" => -- I-Type (JALR)
                     regs(to_integer(unsigned(rd))) <= pc_4_stored;
+
                 when "0110111" => -- U-Type (LUI)
-                    regs(to_integer(unsigned(rd))) <= imm;
+                    regs(to_integer(unsigned(rd))) <= res;
                 when "0010111" => -- U-Type (AUIPC)
                     regs(to_integer(unsigned(rd))) <= res;
                 when others =>

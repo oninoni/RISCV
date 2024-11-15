@@ -1,4 +1,15 @@
--- Jan Ziegler
+--------------------------------
+--                            --
+--         RISC-V CPU         --
+--        Single Cycle        --
+--                            --
+--       by Jan Ziegler       --
+--                            --
+--------------------------------
+
+--------------------------------
+--   Dual Single Cycle BRAM   --
+--------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -67,7 +78,7 @@ begin
         READ_WIDTH_A => 36,
         READ_WIDTH_B => 36,
         WRITE_WIDTH_A => 36,
-        WRITE_WIDTH_B => 0,
+        WRITE_WIDTH_B => 36,
 
         -- RSTREG_PRIORITY_A, RSTREG_PRIORITY_B: Reset or enable priority ("RSTREG" or "REGCE")
         RSTREG_PRIORITY_A => "RSTREG",

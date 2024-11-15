@@ -1,4 +1,15 @@
--- Jan Ziegler
+--------------------------------
+--                            --
+--         RISC-V CPU         --
+--        Single Cycle        --
+--                            --
+--       by Jan Ziegler       --
+--                            --
+--------------------------------
+
+--------------------------------
+--         Main Module        --
+--------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -53,8 +64,10 @@ begin
     -- Instruction Decoder
     ins_decode: entity work.ins_decode
     port map (
+        -- Input signals
         instruction => instruction,
 
+        -- Output signals
         opcode => opcode,
         funct3 => funct3,
         funct7 => funct7,
@@ -72,13 +85,16 @@ begin
         clk => clk,
         res_n => res_n,
 
+        -- Instruction signals
         opcode => opcode,
 
-        pc => pc,
-        pc_4 => pc_4,
-
+        -- Input signals
         branch => branch,
-        res => res
+        res => res,
+
+        -- Output signals
+        pc => pc,
+        pc_4 => pc_4
     );
 
     -- Register File
@@ -90,47 +106,55 @@ begin
         clk => clk,
         res_n => res_n,
 
+        -- Instruction signals
         opcode => opcode,
 
         rs1 => rs1,
         rs2 => rs2,
+        rd => rd,
 
-        imm => imm,
+        -- Input signals
         pc_4 => pc_4,
 
-        rd => rd,
         res => res,
+        ram_rd => ram_rd,
 
+        -- Output signals
         rd1 => rd1,
-        rd2 => rd2,
-
-        ram_rd => ram_rd
+        rd2 => rd2
     );
 
     -- ALU
     alu: entity work.alu
     port map (
+        -- Instruction signals
         opcode => opcode,
         funct3 => funct3,
         funct7 => funct7,
 
+        -- Input signals
+        rd1 => rd1,
+        rd2 => rd2,
+
         pc => pc,
         imm => imm,
 
-        rd1 => rd1,
-        rd2 => rd2,
+        -- Output signals
         res => res
     );
 
     -- Branch Logic
     branch_logic: entity work.branch_logic
     port map (
+        -- Instruction signals
         opcode => opcode,
         funct3 => funct3,
 
+        -- Input signals
         rd1 => rd1,
         rd2 => rd2,
 
+        -- Output signals
         branch => branch
     );
 
@@ -144,16 +168,22 @@ begin
         clk => clk,
         res_n => res_n,
 
+        -- Instruction signals
         opcode => opcode,
         funct3 => funct3,
 
+        -- Input signals
         res => res,
         rd2 => rd2,
+
+        -- Output signals
         ram_rd => ram_rd,
 
+        -- Instruction Memory
         pc => pc,
         instruction => instruction,
 
+        -- GPIO Memory Interface
         gpio_in => gpio_in,
         gpio_out => gpio_out
     );

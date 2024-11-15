@@ -1,4 +1,15 @@
--- Jan Ziegler
+--------------------------------
+--                            --
+--         RISC-V CPU         --
+--        Single Cycle        --
+--                            --
+--       by Jan Ziegler       --
+--                            --
+--------------------------------
+
+--------------------------------
+--      Top Level Module      --
+--------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -18,7 +29,10 @@ entity top is
         btnL : in std_logic;
         btnR : in std_logic;
 
-        LED : out std_logic_vector(15 downto 0)
+        LED : out std_logic_vector(15 downto 0);
+        seg : out std_logic_vector(6 downto 0);
+        dp : out std_logic;
+        an : out std_logic_vector(3 downto 0)
     );
 end top;
 
@@ -56,9 +70,10 @@ architecture Behavioral of top is
 
     constant INIT_VALUE : std_logic_vector((BRAM_COUNT * 1024 * 32) - 1 downto 0) := convert_program(program);
 
-    signal clk_divider : unsigned(15 downto 0) := (others => '0');
-    signal clk_Debounce : std_logic := clk_divider(0);
-    signal clk_CPU : std_logic := clk_divider(1);
+    signal clk_divider : unsigned(23 downto 0) := (others => '0');
+    signal clk_Segments : std_logic;
+    signal clk_Debounce : std_logic;
+    signal clk_CPU : std_logic;
 
     signal res_n : std_logic := '0';
 
@@ -75,6 +90,7 @@ begin
         end if;
     end process;
 
+    clk_Segments <= clk_divider(17);
     clk_Debounce <= clk_divider(15);
     clk_CPU <= clk_divider(5);
 
@@ -132,6 +148,20 @@ begin
     -- Wire the GPIO to the device I/O
     gpio_in <= (19 downto 0 => gpio_in_debounce, others => '0' );
     LED <= gpio_out(15 downto 0);
+
+    -- 7 Segment Display
+    seven_segment : entity work.seven_segment
+    port map (
+        clk => clk_Segments,
+        res_n => res_n,
+
+        data => gpio_out(31 downto 16),
+        seg => seg,
+        an => an
+    );
+
+    -- Disable digit points on seven segment display
+    dp <= '1';
 
     -- CPU
     cpu : entity work.cpu

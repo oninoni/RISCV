@@ -1,4 +1,15 @@
--- Jan Ziegler
+--------------------------------
+--                            --
+--         RISC-V CPU         --
+--        Single Cycle        --
+--                            --
+--       by Jan Ziegler       --
+--                            --
+--------------------------------
+
+--------------------------------
+--      Memory Controller     --
+--------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -23,6 +34,7 @@ entity mem_controller is
         rd2 : in STD_LOGIC_VECTOR (31 downto 0);
         ram_rd : out STD_LOGIC_VECTOR (31 downto 0);
 
+        -- Instruction Memory
         pc : in STD_LOGIC_VECTOR (31 downto 0);
         instruction : out STD_LOGIC_VECTOR (31 downto 0);
 
@@ -39,7 +51,7 @@ end mem_controller;
 -- Other RAM Mapped devices are added later.
 --
 -- Current Memory Map:
--- 0x0000_0000 - 0x0000_FFFF: Instruction Memory (16 x 32kb BRAMs)
+-- 0x0000_0000 - 0x0000_FFFF: Instruction Memory (up to 16 x 32kb BRAMs, depending on BRAM_COUNT)
 -- 0x0001_0000 - 0x0001_000F: GPIO_OUT (8 * 32bit GPIO Banks)
 -- 0x0001_0020 - 0x0001_002F: GPIO_IN (8 * 32bit GPIO Banks)
 -- 0x0001_0030 - 0x0001_FFFF: Reserved for GPIO Memory Expansion
@@ -58,7 +70,11 @@ architecture Behavioral of mem_controller is
     signal ram_wd_internal : std_logic_vector(31 downto 0);
 
 begin
-    -- Initialize the Instruction Memory
+    --------------------------------
+    --       Memory Devices       --
+    --------------------------------
+
+    -- Instruction Memory Bank
     bram_instruction : entity work.bram_instruction
     generic map (
         BRAM_COUNT => BRAM_COUNT,
@@ -95,7 +111,11 @@ begin
         gpio_out => gpio_out
     );
 
-    -- Memory Map Control
+    --------------------------------
+    --       Memory Mapping       --
+    --------------------------------
+
+    -- Memory Map Control Signals
     process(all) begin
         ins_en <= '0';
         gpio_en <= '0';
@@ -111,7 +131,7 @@ begin
         end if;
     end process;
 
-    -- Data read Multiplexer
+    -- Memory Map Read Multiplexer
     process(all) begin
         case (res(31 downto 16)) is
         when x"0000" => -- Instruction Memory
@@ -123,7 +143,11 @@ begin
         end case;
     end process;
 
-    -- Data Read Masking
+    --------------------------------
+    --        Byte Masking        --
+    --------------------------------
+
+    -- Data Read Byte Masking
     process(all) begin
         case (opcode) is
         when "0000011" => -- L-Type (Load, res = address)
@@ -225,7 +249,7 @@ begin
         end case;
     end process;
 
-    -- Data Write Masking
+    -- Data Write Byte Masking
     process(all) begin
         case (opcode) is
         when "0100011" => -- S-Type (Store, res = address)
