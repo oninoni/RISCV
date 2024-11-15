@@ -24,7 +24,7 @@ entity alu is
 
         rd1 : in STD_LOGIC_VECTOR (31 downto 0);
         rd2 : in STD_LOGIC_VECTOR (31 downto 0);
-    
+
         pc : in STD_LOGIC_VECTOR (31 downto 0);
         imm : in STD_LOGIC_VECTOR (31 downto 0);
 
@@ -52,7 +52,10 @@ begin
                     res <= (others => '0');
                 end case;
             when "001" => -- SLL
-                res <= rd1 sll to_integer(unsigned(rd2(4 downto 0)));
+                res <= std_logic_vector(shift_left(
+                    unsigned(rd1),
+                    to_integer(unsigned(rd2(4 downto 0)))
+                ));
             when "010" => -- SLT
                 if (signed(rd1) < signed(rd2)) then
                     res <= X"00000001";
@@ -70,10 +73,15 @@ begin
             when "101" => -- SRL / SRA
                 case (funct7) is
                 when "0000000" => -- SRL
-                    res <= rd1 srl to_integer(unsigned(rd2(4 downto 0)));
+                    res <= std_logic_vector(shift_right(
+                        unsigned(rd1), -- logical shift
+                        to_integer(unsigned(rd2(4 downto 0)))
+                    ));
                 when "0100000" => -- SRA
-                    --res <= rd1 sra to_integer(unsigned(rd2(4 downto 0)));
-                    res <= (others => '0');
+                    res <= std_logic_vector(shift_right(
+                        signed(rd1), -- signed shift
+                        to_integer(unsigned(rd2(4 downto 0)))
+                    ));
                 when others =>
                     res <= (others => '0');
                 end case;
@@ -89,7 +97,10 @@ begin
             when "000" => -- ADDI
                 res <= std_logic_vector(signed(rd1) + signed(imm));
             when "001" => -- SLLI
-                res <= rd1 sll to_integer(unsigned(imm(4 downto 0)));
+                res <= std_logic_vector(shift_left(
+                    unsigned(rd1),
+                    to_integer(unsigned(imm(4 downto 0)))
+                ));
             when "010" => -- SLTI
                 if (signed(rd1) < signed(imm)) then
                     res <= X"00000001";
@@ -107,10 +118,15 @@ begin
             when "101" => -- SRLI / SRAI
                 case (funct7) is
                 when "0000000" => -- SRLI
-                    res <= rd1 srl to_integer(unsigned(imm(4 downto 0)));
+                    res <= std_logic_vector(shift_right(
+                        unsigned(rd1), -- logical shift
+                        to_integer(unsigned(imm(4 downto 0)))
+                    ));
                 when "0100000" => -- SRAI
-                    --res <= rd1 sra to_integer(unsigned(imm(4 downto 0)));
-                    res <= (others => '0');
+                    res <= std_logic_vector(shift_right(
+                        signed(rd1), -- signed shift
+                        to_integer(unsigned(imm(4 downto 0)))
+                    ));
                 when others =>
                     res <= (others => '0');
                 end case;
