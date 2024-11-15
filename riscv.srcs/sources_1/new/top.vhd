@@ -21,18 +21,19 @@ use ieee.std_logic_textio.all;
 entity top is
     Port (
         CLK100MHZ : in std_logic;
-        btnC : in std_logic;
+        CPU_RESETN: in std_logic;
 
         SW : in std_logic_vector(15 downto 0);
-        btnU : in std_logic;
-        btnD : in std_logic;
-        btnL : in std_logic;
-        btnR : in std_logic;
+        BTNU : in std_logic;
+        BTND : in std_logic;
+        BTNL : in std_logic;
+        BTNR : in std_logic;
+        BTNC : in std_logic;
 
         LED : out std_logic_vector(15 downto 0);
-        seg : out std_logic_vector(6 downto 0);
-        dp : out std_logic;
-        an : out std_logic_vector(3 downto 0)
+        SEG : out std_logic_vector(6 downto 0);
+        DP : out std_logic;
+        AN : out std_logic_vector(7 downto 0)
     );
 end top;
 
@@ -80,7 +81,7 @@ architecture Behavioral of top is
     signal gpio_in : std_logic_vector(255 downto 0) := (others => '0');
     signal gpio_out : std_logic_vector(255 downto 0) := (others => '0');
 
-    signal gpio_in_debounce : std_logic_vector(19 downto 0) := (others => '1');
+    signal gpio_in_debounce : std_logic_vector(20 downto 0) := (others => '1');
 begin
     -- Clock divider
     process(CLK100MHZ)
@@ -94,7 +95,7 @@ begin
     clk_Debounce <= clk_divider(15);
     clk_CPU <= clk_divider(5);
 
-    res_n <= not btnC;
+    res_n <= CPU_RESETN;
 
     -- Debouncer for switches
     gen_debounce : for i in 0 to 15 generate
@@ -114,7 +115,7 @@ begin
         clk => clk_Debounce,
         res_n => res_n,
 
-        btn_in => btnU,
+        btn_in => BTNU,
         btn_out => gpio_in_debounce(16)
     );
 
@@ -123,7 +124,7 @@ begin
         clk => clk_Debounce,
         res_n => res_n,
 
-        btn_in => btnD,
+        btn_in => BTND,
         btn_out => gpio_in_debounce(17)
     );
 
@@ -132,7 +133,7 @@ begin
         clk => clk_Debounce,
         res_n => res_n,
 
-        btn_in => btnL,
+        btn_in => BTNL,
         btn_out => gpio_in_debounce(18)
     );
 
@@ -141,12 +142,21 @@ begin
         clk => clk_Debounce,
         res_n => res_n,
 
-        btn_in => btnR,
+        btn_in => BTNR,
         btn_out => gpio_in_debounce(19)
     );
 
+    debuoncer_btnC : entity work.debouncer
+    port map (
+        clk => clk_Debounce,
+        res_n => res_n,
+
+        btn_in => BTNC,
+        btn_out => gpio_in_debounce(20)
+    );
+
     -- Wire the GPIO to the device I/O
-    gpio_in <= (19 downto 0 => gpio_in_debounce, others => '0' );
+    gpio_in <= (20 downto 0 => gpio_in_debounce, others => '0' );
     LED <= gpio_out(15 downto 0);
 
     -- 7 Segment Display
@@ -155,13 +165,13 @@ begin
         clk => clk_Segments,
         res_n => res_n,
 
-        data => gpio_out(31 downto 16),
-        seg => seg,
-        an => an
+        data => gpio_out(63 downto 32),
+        seg => SEG,
+        an => AN
     );
 
     -- Disable digit points on seven segment display
-    dp <= '1';
+    DP <= '1';
 
     -- CPU
     cpu : entity work.cpu
