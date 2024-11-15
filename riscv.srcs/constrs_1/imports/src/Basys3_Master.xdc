@@ -8,11 +8,6 @@ set_property PACKAGE_PIN W5 [get_ports CLK100MHZ]
 set_property IOSTANDARD LVCMOS33 [get_ports CLK100MHZ]
 create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports CLK100MHZ]
 
-create_generated_clock -name CLOCK_CPU -source [get_ports *CLK*] -divide_by 64 [get_pins {clk_divider_reg[5]/Q}]
-create_generated_clock -name CLOCK_DEBOUNCE -source [get_ports *CLK*] -divide_by 65536 [get_pins {clk_divider_reg[15]/Q}]
-create_generated_clock -name CLOCK_SEGMENTS -source [get_ports *CLK*] -divide_by 262144 [get_pins {clk_divider_reg[17]/Q}]
-
-
 # Switches
 set_property PACKAGE_PIN V17 [get_ports {sw[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {sw[0]}]

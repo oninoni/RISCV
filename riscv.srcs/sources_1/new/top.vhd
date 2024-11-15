@@ -23,7 +23,7 @@ entity top is
         CLK100MHZ : in std_logic;
         btnC : in std_logic;
 
-        sw : in std_logic_vector(15 downto 0);
+        SW : in std_logic_vector(15 downto 0);
         btnU : in std_logic;
         btnD : in std_logic;
         btnL : in std_logic;
@@ -103,7 +103,7 @@ begin
             clk => clk_Debounce,
             res_n => res_n,
 
-            btn_in => sw(i),
+            btn_in => SW(i),
             btn_out => gpio_in_debounce(i)
         );
     end generate;
