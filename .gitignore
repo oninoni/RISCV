@@ -4,3 +4,5 @@ riscv.runs/
 riscv.cache/
 
 riscv.sim/sim_1/
+
+riscv.ip_user_files/
