@@ -15,4 +15,7 @@ SRLI t2, t0, 1
 SRAI t3, t0, 1
 SLTI t4, t0, 0
 SLTIU t5, t0, 0
-LUI t0, 0x80000
+LUI t6, 0x80000
+NOP
+NOP
+ADDI t6, t6, 0x123
