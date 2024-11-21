@@ -31,13 +31,13 @@ entity bram_instruction is
         data_wr : in std_logic_vector(3 downto 0);
         data_adr : in std_logic_vector((11 + BRAM_WIDTH) downto 0);
 
-        data_out : out std_logic_vector(31 downto 0);
+        data_out : out std_logic_vector(31 downto 0) := (others => '0');
         data_in : in std_logic_vector(31 downto 0);
 
         -- Instruction Fetch Interface
         instruction_clk : in std_logic;
         instruction_adr : in std_logic_vector((11 + BRAM_WIDTH) downto 0);
-        instruction_out : out std_logic_vector(31 downto 0)
+        instruction_out : out std_logic_vector(31 downto 0) := (others => '0')
     );
 end bram_instruction;
 

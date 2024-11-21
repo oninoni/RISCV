@@ -25,11 +25,11 @@ entity vram_gpio is
         data_wr : in std_logic_vector(3 downto 0);
         data_adr : in std_logic_vector(5 downto 0);
 
-        data_out : out std_logic_vector(31 downto 0);
+        data_out : out std_logic_vector(31 downto 0) := (others => '0');
         data_in : in std_logic_vector(31 downto 0);
 
         gpio_in : in STD_LOGIC_VECTOR (255 downto 0);
-        gpio_out : out STD_LOGIC_VECTOR (255 downto 0)
+        gpio_out : out STD_LOGIC_VECTOR (255 downto 0) := (others => '0')
     );
 end vram_gpio;
 

@@ -30,7 +30,7 @@ entity bram is
         A_Write: in std_logic_vector(3 downto 0);
         A_Addr: in std_logic_vector(9 downto 0);
 
-        A_RData: out std_logic_vector(31 downto 0);
+        A_RData: out std_logic_vector(31 downto 0) := (others => '0');
         A_WData: in std_logic_vector(31 downto 0);
 
         -- Port B
@@ -40,13 +40,19 @@ entity bram is
         B_Write: in std_logic_vector(3 downto 0);
         B_Addr: in std_logic_vector(9 downto 0);
 
-        B_RData: out std_logic_vector(31 downto 0);
+        B_RData: out std_logic_vector(31 downto 0) := (others => '0');
         B_WData: in std_logic_vector(31 downto 0)
     );
 end entity bram;
 
 architecture Behavior of bram is
+    signal A_RData_Internal: std_logic_vector(31 downto 0);
+    signal B_RData_Internal: std_logic_vector(31 downto 0);
 begin
+    -- Port A
+    A_RData <= A_RData_Internal or X"00000000";
+    B_RData <= B_RData_Internal or X"00000000";
+
     RAMB36E1 : UNISIM.vcomponents.RAMB36E1
     generic map (
         -- Address Collision Mode: "PERFORMANCE" or "DELAYED_WRITE"
@@ -240,7 +246,7 @@ begin
         WEA => A_Write,
         ADDRARDADDR => ('1', A_Addr(9 downto 0), others => '0'),
 
-        DOADO => A_RData,
+        DOADO => A_RData_Internal,
         DIADI => A_WData,
 
         -- Port B I/O Signals
@@ -250,7 +256,7 @@ begin
         WEBWE => ("0000", B_Write),
         ADDRBWRADDR => ('1', B_Addr(9 downto 0), others => '0'),
 
-        DOBDO => B_RData,
+        DOBDO => B_RData_Internal,
         DIBDI => B_WData,
 
         -- Disabled Signals

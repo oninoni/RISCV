@@ -9,25 +9,32 @@ end cpu_tb;
 
 architecture Behavioral of cpu_tb is
     signal clk : std_logic := '0';
-    signal res_n : std_logic := '1';
+    signal res_n : std_logic := '0';
 
-    signal sw : std_logic_vector(15 downto 0) := "0011001100110011";
+    signal SW : std_logic_vector(15 downto 0) := "0011001100110011";
     signal LED : std_logic_vector(15 downto 0);
+    signal SEG : std_logic_vector(6 downto 0);
+    signal DP : std_logic;
+    signal AN : std_logic_vector(7 downto 0);
 begin
     top : entity work.top
     port map (
         CLK100MHZ => clk,
-        btnC => res_n,
+        CPU_RESETN => res_n,
 
-        sw => sw,
+        SW => SW,
+        BTNC => '0',
+        BTNU => '0',
+        BTND => '0',
+        BTNL => '0',
+        BTNR => '0',
+
         LED => LED,
-
-        btnU => '0',
-        btnD => '0',
-        btnL => '0',
-        btnR => '0'
+        SEG => SEG,
+        DP => DP,
+        AN => AN
     );
 
-    clk <= not clk after 200 ns;
-    res_n <= '0' after 500 ns;
+    clk <= not clk after 5 ns;
+    res_n <= '1' after 20 ns;
 end Behavioral;

@@ -20,8 +20,8 @@ entity seven_segment is
         clk : in STD_LOGIC;
         res_n : in STD_LOGIC;
         data : in STD_LOGIC_VECTOR (31 downto 0);
-        seg : out STD_LOGIC_VECTOR (6 downto 0);
-        an : out STD_LOGIC_VECTOR (7 downto 0)
+        seg : out STD_LOGIC_VECTOR (6 downto 0) := (others => '0');
+        an : out STD_LOGIC_VECTOR (7 downto 0) := (others => '0')
     );
 end seven_segment;
 
@@ -72,6 +72,10 @@ begin
         when "111" =>
             an <= "01111111";
             LED_BCD <= data(31 downto 28);
+
+        when others =>
+            an <= "11111111";
+            LED_BCD <= "0000";
         end case;
     end process;
 
@@ -95,6 +99,8 @@ begin
         when "1101" => seg <= "0100001"; -- D
         when "1110" => seg <= "0000110"; -- E
         when "1111" => seg <= "0001110"; -- F
+
+        when others => seg <= "1111111"; -- Off
         end case;
     end process;
 end Behavioral;

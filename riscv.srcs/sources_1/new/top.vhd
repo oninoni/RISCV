@@ -82,6 +82,7 @@ architecture Behavioral of top is
     signal gpio_out : std_logic_vector(255 downto 0) := (others => '0');
 
     signal gpio_in_debounce : std_logic_vector(20 downto 0) := (others => '1');
+    signal gpio_out_debounce : std_logic_vector(20 downto 0) := (others => '1');
 begin
     -- Clock divider
     process(CLK100MHZ)
@@ -97,66 +98,23 @@ begin
 
     res_n <= CPU_RESETN;
 
-    -- Debouncer for switches
-    gen_debounce : for i in 0 to 15 generate
-        debouncer_sw : entity work.debouncer
-        port map (
-            clk => clk_Debounce,
-            res_n => res_n,
-
-            btn_in => SW(i),
-            btn_out => gpio_in_debounce(i)
-        );
-    end generate;
-
-    -- Debouncer for buttons
-    debouncer_btnU : entity work.debouncer
+    -- Debouncer
+    debouncer : entity work.debouncer
+    generic map (
+        WIDTH => 21
+    )
     port map (
         clk => clk_Debounce,
         res_n => res_n,
 
-        btn_in => BTNU,
-        btn_out => gpio_in_debounce(16)
+        btn_in => gpio_in_debounce,
+        btn_out => gpio_out_debounce
     );
 
-    debouncer_btnD : entity work.debouncer
-    port map (
-        clk => clk_Debounce,
-        res_n => res_n,
-
-        btn_in => BTND,
-        btn_out => gpio_in_debounce(17)
-    );
-
-    debouncer_btnL : entity work.debouncer
-    port map (
-        clk => clk_Debounce,
-        res_n => res_n,
-
-        btn_in => BTNL,
-        btn_out => gpio_in_debounce(18)
-    );
-
-    debouncer_btnR : entity work.debouncer
-    port map (
-        clk => clk_Debounce,
-        res_n => res_n,
-
-        btn_in => BTNR,
-        btn_out => gpio_in_debounce(19)
-    );
-
-    debuoncer_btnC : entity work.debouncer
-    port map (
-        clk => clk_Debounce,
-        res_n => res_n,
-
-        btn_in => BTNC,
-        btn_out => gpio_in_debounce(20)
-    );
+    gpio_in_debounce <= BTNC & BTNR & BTNL & BTND & BTNU & SW;
 
     -- Wire the GPIO to the device I/O
-    gpio_in <= (20 downto 0 => gpio_in_debounce, others => '0' );
+    gpio_in <= (20 downto 0 => gpio_out_debounce, others => '0' );
     LED <= gpio_out(15 downto 0);
 
     -- 7 Segment Display
@@ -173,8 +131,8 @@ begin
     -- Disable digit points on seven segment display
     DP <= '1';
 
-    -- CPU
-    cpu : entity work.cpu
+    -- Pipelined CPU
+    cpu_pipelined : entity work.cpu_pipelined
     generic map (
         BRAM_COUNT => BRAM_COUNT,
 
