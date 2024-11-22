@@ -109,14 +109,21 @@ architecture Behavioral of bram_instruction is
 
     -- Memory Interface
     signal bram_mem_en : std_logic_vector(BRAM_COUNT - 1 downto 0) := (others => '0');
+    signal bram_addr : std_logic_aoa(0 to BRAM_COUNT - 1)(11 downto 0) := (others => "000000000000");
     signal mem_out : std_logic_aoa(0 to BRAM_COUNT - 1)(7 downto 0) := (others => "00000000");
     signal mem_in : std_logic_aoa(0 to BRAM_COUNT - 1)(7 downto 0) := (others => "00000000");
 
+    -- Offset memory address for the memory.
+    signal mem_addr_0 : std_logic_vector(MEM_WIDTH - 1 downto 0) := (others => '0');
+    signal mem_addr_1 : std_logic_vector(MEM_WIDTH - 1 downto 0) := (others => '0');
+    signal mem_addr_2 : std_logic_vector(MEM_WIDTH - 1 downto 0) := (others => '0');
+    signal mem_addr_3 : std_logic_vector(MEM_WIDTH - 1 downto 0) := (others => '0');
+
     -- Address Decoder signals for all 4 active BRAMs.
-    signal mem_addr_0 : integer := 0;
-    signal mem_addr_1 : integer := 0;
-    signal mem_addr_2 : integer := 0;
-    signal mem_addr_3 : integer := 0;
+    signal mem_bram_addr_0 : integer := 0;
+    signal mem_bram_addr_1 : integer := 0;
+    signal mem_bram_addr_2 : integer := 0;
+    signal mem_bram_addr_3 : integer := 0;
 begin
     -- Generate the BRAMs
     gen_bram : for i in 0 to BRAM_COUNT - 1 generate
@@ -133,7 +140,7 @@ begin
             A_Enable => bram_mem_en(i),
 
             -- 2 LSB and all MSB are encoded in bram_mem_en, since the memory is interleaved.
-            A_Addr => mem_adr(13 downto 2),
+            A_Addr => bram_addr(i),
 
             A_RData => mem_out(i),
 
@@ -154,24 +161,26 @@ begin
         );
     end generate;
 
-    -- Generate the 4 address signals for the BRAMs.
-    --
+    -- Instruction address is simple, since they are not misaligned.
+    ins_addr_3 <= to_integer(unsigned(pc(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2)) * 4 + unsigned(pc(1 downto 0)));
+    ins_addr_2 <= (ins_addr_3 + 1) mod BRAM_COUNT;
+    ins_addr_1 <= (ins_addr_3 + 2) mod BRAM_COUNT;
+    ins_addr_0 <= (ins_addr_3 + 3) mod BRAM_COUNT;
+
     -- Now, The theory is that all 4 "active" brams have their own address.
     -- The address of the most significant Byte is taken from the MSB of the memory address.
     -- The other 3 words are addressed as +1, +2, +3 respectively.
-    --
+    mem_addr_3 <= std_logic_vector(unsigned(mem_adr) + 0);
+    mem_addr_2 <= std_logic_vector(unsigned(mem_adr) + 1);
+    mem_addr_1 <= std_logic_vector(unsigned(mem_adr) + 2);
+    mem_addr_0 <= std_logic_vector(unsigned(mem_adr) + 3);
+
     -- When the address reaches the end of the block, it wraps around to the beginning.
     -- This is not a problem, since such an access is blocked in a higher level module.
-
-    ins_addr_3 <= to_integer(unsigned(pc(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(pc(1 downto 0)));
-    ins_addr_2 <= ins_addr_3 + 1;
-    ins_addr_1 <= ins_addr_3 + 2;
-    ins_addr_0 <= ins_addr_3 + 3;
-
-    mem_addr_3 <= to_integer(unsigned(mem_adr(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(mem_adr(1 downto 0)));
-    mem_addr_2 <= mem_addr_3 + 1;
-    mem_addr_1 <= mem_addr_3 + 2;
-    mem_addr_0 <= mem_addr_3 + 3;
+    mem_bram_addr_3 <= (to_integer(unsigned(mem_addr_3(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(mem_addr_3(1 downto 0)))) mod BRAM_COUNT;
+    mem_bram_addr_2 <= (to_integer(unsigned(mem_addr_2(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(mem_addr_2(1 downto 0)))) mod BRAM_COUNT;
+    mem_bram_addr_1 <= (to_integer(unsigned(mem_addr_1(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(mem_addr_1(1 downto 0)))) mod BRAM_COUNT;
+    mem_bram_addr_0 <= (to_integer(unsigned(mem_addr_0(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(mem_addr_0(1 downto 0)))) mod BRAM_COUNT;
 
     -- Generate the enable signals for the BRAMs.
     process(all)
@@ -189,20 +198,53 @@ begin
 
         -- Always enable the first byte, when we are interacting with the memory.
         temp_mem := (others => '0');
-        temp_mem(mem_addr_3) := mem_en;
+        temp_mem(mem_bram_addr_3) := mem_en;
 
         -- Only enable when a half word or word is written.
         if (mem_size = "01" or mem_size = "10") then
-            temp_mem(mem_addr_2) := mem_en;
+            temp_mem(mem_bram_addr_2) := mem_en;
         end if;
 
         -- Only enable when a word is written.
         if (mem_size = "10") then
-            temp_mem(mem_addr_1) := mem_en;
-            temp_mem(mem_addr_0) := mem_en;
+            temp_mem(mem_bram_addr_1) := mem_en;
+            temp_mem(mem_bram_addr_0) := mem_en;
         end if;
 
         bram_mem_en <= temp_mem;
+    end process;
+
+    -- Generate the address signals for the BRAMs.
+    process(all)
+        variable sel : integer;
+    begin
+        for i in 0 to BRAM_COUNT - 1 loop
+            if (mem_bram_addr_3 = i) then
+                sel := 3;
+            elsif (mem_bram_addr_2 = i) then
+                sel := 2;
+            elsif (mem_bram_addr_1 = i) then
+                sel := 1;
+            elsif (mem_bram_addr_0 = i) then
+                sel := 0;
+            else
+                sel := -1;
+            end if;
+
+            case sel is
+            when 3 =>
+                bram_addr(i) <= mem_addr_3(MEM_WIDTH - BRAM_WIDTH + 1 downto 2);
+            when 2 =>
+                bram_addr(i) <= mem_addr_2(MEM_WIDTH - BRAM_WIDTH + 1 downto 2);
+            when 1 =>
+                bram_addr(i) <= mem_addr_1(MEM_WIDTH - BRAM_WIDTH + 1 downto 2);
+            when 0 =>
+                bram_addr(i) <= mem_addr_0(MEM_WIDTH - BRAM_WIDTH + 1 downto 2);
+
+            when others =>
+                bram_addr(i) <= (others => '0');
+            end case;
+        end loop;
     end process;
 
     -- Generate the output signals.
@@ -211,12 +253,14 @@ begin
         mem_in <= (others => (others => '0'));
 
         if (mem_en = '1') then
-            mem_read_data <= mem_out(mem_addr_3) & mem_out(mem_addr_2) & mem_out(mem_addr_1) & mem_out(mem_addr_0);
+            mem_read_data <= mem_out(mem_bram_addr_3) & mem_out(mem_bram_addr_2) & mem_out(mem_bram_addr_1) & mem_out(mem_bram_addr_0);
 
-            mem_in(mem_addr_3) <= mem_write_data(31 downto 24);
-            mem_in(mem_addr_2) <= mem_write_data(23 downto 16);
-            mem_in(mem_addr_1) <= mem_write_data(15 downto 8);
-            mem_in(mem_addr_0) <= mem_write_data(7 downto 0);
+            mem_in(mem_bram_addr_3) <= mem_write_data(31 downto 24);
+            mem_in(mem_bram_addr_2) <= mem_write_data(23 downto 16);
+            mem_in(mem_bram_addr_1) <= mem_write_data(15 downto 8);
+            mem_in(mem_bram_addr_0) <= mem_write_data(7 downto 0);
+        else
+            mem_read_data <= (others => '0');
         end if;
     end process;
 

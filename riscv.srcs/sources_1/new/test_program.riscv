@@ -15,14 +15,29 @@ SRLI t2, t0, 1
 SRAI t3, t0, 1
 SLTI t4, t0, 0
 SLTIU t5, t0, 0
-LUI t6, 0x80000
+AUIPC t6, 1
+LUI t6, 0x04030
 NOP
 NOP
-ADDI t6, t6, 0x123
+ADDI t6, t6, 0x201
 ADDI sp, sp, -4
 NOP
 NOP
 SW t6, 0(sp)
-NOP
-NOP
+SH t6, -3(sp)
+SB t6, -5(sp)
 LW s0, 0(sp)
+LW s1, -1(sp)
+LW s2, -2(sp)
+LW s3, -3(sp)
+LW s0, -4(sp)
+LW s1, -8(sp)
+ADDI t0, x0, -1
+NOP
+NOP
+SW t0, 0(sp)
+LW s0, 0(sp)
+LH s1, 0(sp)
+LHU s2, 0(sp)
+LB s3, 0(sp)
+LBU s4, 0(sp)
