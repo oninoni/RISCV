@@ -163,48 +163,53 @@ begin
     -- When the address reaches the end of the block, it wraps around to the beginning.
     -- This is not a problem, since such an access is blocked in a higher level module.
 
-    ins_addr_3 <= to_integer(unsigned(pc(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH))) * 4 + to_integer(unsigned(pc(1 downto 0)));
+    ins_addr_3 <= to_integer(unsigned(pc(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(pc(1 downto 0)));
     ins_addr_2 <= ins_addr_3 + 1;
     ins_addr_1 <= ins_addr_3 + 2;
     ins_addr_0 <= ins_addr_3 + 3;
 
-    mem_addr_3 <= to_integer(unsigned(mem_adr(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH))) * 4 + to_integer(unsigned(mem_adr(1 downto 0)));
+    mem_addr_3 <= to_integer(unsigned(mem_adr(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(mem_adr(1 downto 0)));
     mem_addr_2 <= mem_addr_3 + 1;
     mem_addr_1 <= mem_addr_3 + 2;
     mem_addr_0 <= mem_addr_3 + 3;
 
     -- Generate the enable signals for the BRAMs.
     process(all)
-        variable temp : std_logic_vector(BRAM_COUNT - 1 downto 0) := (others => '0');
+        variable temp_ins : std_logic_vector(BRAM_COUNT - 1 downto 0) := (others => '0');
+        variable temp_mem : std_logic_vector(BRAM_COUNT - 1 downto 0) := (others => '0');
     begin
         -- Instruction memory is always used with full width.
-        temp := (others => '0');
-        temp(ins_addr_3) := '1';
-        temp(ins_addr_2) := '1';
-        temp(ins_addr_1) := '1';
-        temp(ins_addr_0) := '1';
+        temp_ins := (others => '0');
+        temp_ins(ins_addr_3) := '1';
+        temp_ins(ins_addr_2) := '1';
+        temp_ins(ins_addr_1) := '1';
+        temp_ins(ins_addr_0) := '1';
 
-        bram_ins_en <= temp;
+        bram_ins_en <= temp_ins;
 
         -- Always enable the first byte, when we are interacting with the memory.
-        bram_mem_en <= (others => '0');
-        bram_mem_en(mem_addr_3) <= mem_en;
+        temp_mem := (others => '0');
+        temp_mem(mem_addr_3) := mem_en;
 
         -- Only enable when a half word or word is written.
         if (mem_size = "01" or mem_size = "10") then
-            bram_mem_en(mem_addr_2) <= mem_en;
+            temp_mem(mem_addr_2) := mem_en;
         end if;
 
         -- Only enable when a word is written.
         if (mem_size = "10") then
-            bram_mem_en(mem_addr_1) <= mem_en;
-            bram_mem_en(mem_addr_0) <= mem_en;
+            temp_mem(mem_addr_1) := mem_en;
+            temp_mem(mem_addr_0) := mem_en;
         end if;
+
+        bram_mem_en <= temp_mem;
     end process;
 
     -- Generate the output signals.
     process(all)
     begin
+        mem_in <= (others => (others => '0'));
+
         if (mem_en = '1') then
             mem_read_data <= mem_out(mem_addr_3) & mem_out(mem_addr_2) & mem_out(mem_addr_1) & mem_out(mem_addr_0);
 
@@ -212,10 +217,6 @@ begin
             mem_in(mem_addr_2) <= mem_write_data(23 downto 16);
             mem_in(mem_addr_1) <= mem_write_data(15 downto 8);
             mem_in(mem_addr_0) <= mem_write_data(7 downto 0);
-        else
-            mem_read_data <= (others => '0');
-
-            mem_in <= (others => (others => '0'));
         end if;
     end process;
 

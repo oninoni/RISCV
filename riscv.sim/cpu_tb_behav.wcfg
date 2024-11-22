@@ -11,14 +11,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="21.570001 us"></ZoomEndTime>
-      <Cursor1Time time="0.750000 us"></Cursor1Time>
+      <ZoomEndTime time="18.052588 us"></ZoomEndTime>
+      <Cursor1Time time="17.595000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="174"></NameColumnWidth>
-      <ValueColumnWidth column_width="80"></ValueColumnWidth>
+      <NameColumnWidth column_width="423"></NameColumnWidth>
+      <ValueColumnWidth column_width="518"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="40" />
+   <WVObjectSize size="41" />
    <wvobject fp_name="/cpu_tb/top/cpu_pipelined/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -42,6 +42,7 @@
    <wvobject type="divider" fp_name="divider50">
       <obj_property name="label">IF / ID Pipeline</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">#00FFFF</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_id_pc" type="array">
       <obj_property name="ElementShortName">pipe_id_pc[31:0]</obj_property>
@@ -54,6 +55,7 @@
    <wvobject type="divider" fp_name="divider19">
       <obj_property name="label">Instruction Decode</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">#00FFFF</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_tb/top/cpu_pipelined/rs1" type="array">
       <obj_property name="ElementShortName">rs1[4:0]</obj_property>
@@ -70,28 +72,18 @@
       <obj_property name="ObjectShortName">rd[4:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/imm" type="array">
-      <obj_property name="ElementShortName">imm[31:0]</obj_property>
-      <obj_property name="ObjectShortName">imm[31:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/rd1" type="array">
-      <obj_property name="ElementShortName">rd1[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rd1[31:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/rd2" type="array">
-      <obj_property name="ElementShortName">rd2[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rd2[31:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
    <wvobject type="divider" fp_name="divider63">
       <obj_property name="label">ID / EX Pipeline</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">#FFA500</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_ex_rd" type="array">
-      <obj_property name="ElementShortName">pipe_ex_rd[4:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_ex_rd[4:0]</obj_property>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_ex_pc" type="array">
+      <obj_property name="ElementShortName">pipe_ex_pc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_ex_pc[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_ex_pc_4" type="array">
+      <obj_property name="ElementShortName">pipe_ex_pc_4[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_ex_pc_4[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_ex_rd1" type="array">
       <obj_property name="ElementShortName">pipe_ex_rd1[31:0]</obj_property>
@@ -108,18 +100,31 @@
    <wvobject type="divider" fp_name="divider69">
       <obj_property name="label">Execute</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">#FFA500</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/res" type="array">
-      <obj_property name="ElementShortName">res[31:0]</obj_property>
-      <obj_property name="ObjectShortName">res[31:0]</obj_property>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/alu/op_sel" type="array">
+      <obj_property name="ElementShortName">op_sel[1:0]</obj_property>
+      <obj_property name="ObjectShortName">op_sel[1:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/alu/alu_op" type="array">
+      <obj_property name="ElementShortName">alu_op[1:0]</obj_property>
+      <obj_property name="ObjectShortName">alu_op[1:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/alu/alu_mode" type="array">
+      <obj_property name="ElementShortName">alu_mode[1:0]</obj_property>
+      <obj_property name="ObjectShortName">alu_mode[1:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider65">
       <obj_property name="label">EX / MEM Pipeline</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">#FF00FF</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_mem_rd" type="array">
-      <obj_property name="ElementShortName">pipe_mem_rd[4:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_mem_rd[4:0]</obj_property>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_mem_pc_4" type="array">
+      <obj_property name="ElementShortName">pipe_mem_pc_4[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_mem_pc_4[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_mem_rd2" type="array">
       <obj_property name="ElementShortName">pipe_mem_rd2[31:0]</obj_property>
@@ -128,22 +133,37 @@
    <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_mem_res" type="array">
       <obj_property name="ElementShortName">pipe_mem_res[31:0]</obj_property>
       <obj_property name="ObjectShortName">pipe_mem_res[31:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider28">
       <obj_property name="label">Memory</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">#FF00FF</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/ram_rd" type="array">
-      <obj_property name="ElementShortName">ram_rd[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ram_rd[31:0]</obj_property>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/mem_controller/mem_read" type="logic">
+      <obj_property name="ElementShortName">mem_read</obj_property>
+      <obj_property name="ObjectShortName">mem_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/mem_controller/mem_write" type="logic">
+      <obj_property name="ElementShortName">mem_write</obj_property>
+      <obj_property name="ObjectShortName">mem_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/mem_controller/mem_size" type="array">
+      <obj_property name="ElementShortName">mem_size[1:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_size[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/mem_controller/mem_signed" type="logic">
+      <obj_property name="ElementShortName">mem_signed</obj_property>
+      <obj_property name="ObjectShortName">mem_signed</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider72">
       <obj_property name="label">MEM / WB Pipeline</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">#FF0000</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_wb_rd" type="array">
-      <obj_property name="ElementShortName">pipe_wb_rd[4:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_wb_rd[4:0]</obj_property>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_wb_pc_4" type="array">
+      <obj_property name="ElementShortName">pipe_wb_pc_4[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_wb_pc_4[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_tb/top/cpu_pipelined/pipe_wb_res" type="array">
       <obj_property name="ElementShortName">pipe_wb_res[31:0]</obj_property>
@@ -156,35 +176,27 @@
    <wvobject type="divider" fp_name="divider83">
       <obj_property name="label">Write Back</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">#FF0000</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/regs[5]" type="array">
-      <obj_property name="ElementShortName">[5][31:0]</obj_property>
-      <obj_property name="ObjectShortName">[5][31:0]</obj_property>
-      <obj_property name="Radix">BINARYRADIX</obj_property>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/wb_mux/wb_sel" type="array">
+      <obj_property name="ElementShortName">wb_sel[1:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_sel[1:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/regs[6]" type="array">
-      <obj_property name="ElementShortName">[6][31:0]</obj_property>
-      <obj_property name="ObjectShortName">[6][31:0]</obj_property>
-      <obj_property name="Radix">BINARYRADIX</obj_property>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/reg_write" type="logic">
+      <obj_property name="ElementShortName">reg_write</obj_property>
+      <obj_property name="ObjectShortName">reg_write</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/regs[7]" type="array">
-      <obj_property name="ElementShortName">[7][31:0]</obj_property>
-      <obj_property name="ObjectShortName">[7][31:0]</obj_property>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/rd" type="array">
+      <obj_property name="ElementShortName">rd[4:0]</obj_property>
+      <obj_property name="ObjectShortName">rd[4:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/regs[28]" type="array">
-      <obj_property name="ElementShortName">[28][31:0]</obj_property>
-      <obj_property name="ObjectShortName">[28][31:0]</obj_property>
+   <wvobject type="divider" fp_name="divider849">
+      <obj_property name="label">Register</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/regs[29]" type="array">
-      <obj_property name="ElementShortName">[29][31:0]</obj_property>
-      <obj_property name="ObjectShortName">[29][31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/regs[30]" type="array">
-      <obj_property name="ElementShortName">[30][31:0]</obj_property>
-      <obj_property name="ObjectShortName">[30][31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/regs[31]" type="array">
-      <obj_property name="ElementShortName">[31][31:0]</obj_property>
-      <obj_property name="ObjectShortName">[31][31:0]</obj_property>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/reg_file/regs" type="array">
+      <obj_property name="ElementShortName">regs[1:31][31:0]</obj_property>
+      <obj_property name="ObjectShortName">regs[1:31][31:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
 </wave_config>

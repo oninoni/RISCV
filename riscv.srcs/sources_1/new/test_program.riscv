@@ -19,3 +19,10 @@ LUI t6, 0x80000
 NOP
 NOP
 ADDI t6, t6, 0x123
+ADDI sp, sp, -4
+NOP
+NOP
+SW t6, 0(sp)
+NOP
+NOP
+LW s0, 0(sp)
