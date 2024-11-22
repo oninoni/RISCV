@@ -30,15 +30,16 @@ entity top is
         BTNR : in std_logic;
         BTNC : in std_logic;
 
-        LED : out std_logic_vector(15 downto 0);
-        SEG : out std_logic_vector(6 downto 0);
-        DP : out std_logic;
-        AN : out std_logic_vector(7 downto 0)
+        LED : out std_logic_vector(15 downto 0) := (others => '0');
+        SEG : out std_logic_vector(6 downto 0) := (others => '0');
+        DP : out std_logic := '0';
+        AN : out std_logic_vector(7 downto 0) := (others => '1')
     );
 end top;
 
 architecture Behavioral of top is
-    constant BRAM_COUNT : integer := 8;
+    constant BLOCK_COUNT : integer := 4;
+    constant BRAM_COUNT : integer := BLOCK_COUNT * 4;
 
     -- Read the program from a hex file.
     type program_type is array (0 to ((BRAM_COUNT * 1024) - 1)) of std_logic_vector(31 downto 0);
@@ -60,7 +61,7 @@ architecture Behavioral of top is
 
     -- Convert the program into a signal std_logic_vector
     impure function convert_program(program : program_type) return std_logic_vector is
-        variable program_vector : std_logic_vector((BRAM_COUNT * 1024 * 32) - 1 downto 0);
+        variable program_vector : std_logic_vector((BRAM_COUNT * 32768) - 1 downto 0);
     begin
         for i in 0 to ((BRAM_COUNT * 1024) - 1) loop
             program_vector((i * 32) + 31 downto (i * 32)) := program((BRAM_COUNT * 1024) - 1 - i);
@@ -69,12 +70,12 @@ architecture Behavioral of top is
         return program_vector;
     end function;
 
-    constant INIT_VALUE : std_logic_vector((BRAM_COUNT * 1024 * 32) - 1 downto 0) := convert_program(program);
+    constant INIT_VALUE : std_logic_vector((BRAM_COUNT * 32768) - 1 downto 0) := convert_program(program);
 
     signal clk_divider : unsigned(23 downto 0) := (others => '0');
-    signal clk_Segments : std_logic;
-    signal clk_Debounce : std_logic;
-    signal clk_CPU : std_logic;
+    signal clk_Segments : std_logic := '0';
+    signal clk_Debounce : std_logic := '0';
+    signal clk_CPU : std_logic := '0';
 
     signal res_n : std_logic := '0';
 
@@ -134,9 +135,9 @@ begin
     -- Pipelined CPU
     cpu_pipelined : entity work.cpu_pipelined
     generic map (
-        BRAM_COUNT => BRAM_COUNT,
+        BLOCK_COUNT => BLOCK_COUNT,
 
-        INIT_VALUE => (INIT_VALUE, others => '0')
+        INIT_VALUE => INIT_VALUE
     )
     port map (
         clk => clk_CPU,

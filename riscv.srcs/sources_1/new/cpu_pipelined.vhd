@@ -17,17 +17,27 @@ use ieee.numeric_std.all;
 
 entity cpu_pipelined is
     generic (
-        BRAM_COUNT : integer := 4;
+        -- Number of 16kB blocks.
+        BLOCK_COUNT: integer := 4;
+        -- Number of 4kB BRAMs.
+        BRAM_COUNT: integer := BLOCK_COUNT * 4;
+
+        -- All initial values for the BRAMs.
+        -- Size if the ammount of bits in all blocks.
+        INIT_VALUE: std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0');
+
+        -- Initial value for the stack pointer.
         STACK_POINTER_INIT : std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned(BRAM_COUNT * 1024 * 4, 32));
 
-        INIT_VALUE : std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0')
+        -- Ammount of GPIO Pins
+        GPIO_COUNT: integer := 256
     );
     port (
         clk : in std_logic;
         res_n : in std_logic;
 
-        gpio_in : in STD_LOGIC_VECTOR (255 downto 0);
-        gpio_out : out STD_LOGIC_VECTOR (255 downto 0) := (others => '0')
+        gpio_in : in STD_LOGIC_VECTOR (GPIO_COUNT - 1 downto 0);
+        gpio_out : out STD_LOGIC_VECTOR (GPIO_COUNT - 1 downto 0) := (others => '0')
     );
 end entity cpu_pipelined;
 
@@ -346,7 +356,8 @@ begin
     -- Memory Controller
     mem_controller: entity work.mem_controller
     generic map (
-        BRAM_COUNT => BRAM_COUNT,
+        BLOCK_COUNT => BLOCK_COUNT,
+
         INIT_VALUE => INIT_VALUE
     )
     port map (

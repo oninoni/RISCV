@@ -17,94 +17,107 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 entity vram_gpio is
+    generic (
+        -- Number of GPIO pins.
+        GPIO_COUNT: integer := 256;
+        -- Number of bits to address the GPIOs.
+        GPIO_WIDTH : integer := integer(ceil(log2(real(GPIO_COUNT)))) + 1 -- +1 for the read/write selection
+    );
     port (
-        data_clk : in std_logic;
+        clk : in std_logic;
         res_n : in std_logic;
-        data_en : in std_logic;
 
-        data_wr : in std_logic_vector(3 downto 0);
-        data_adr : in std_logic_vector(5 downto 0);
+        -- Stage 4: Memory Access
+        mem_en : in std_logic;
+        mem_write : in std_logic;
+        mem_size : in std_logic_vector(1 downto 0);
 
-        data_out : out std_logic_vector(31 downto 0) := (others => '0');
-        data_in : in std_logic_vector(31 downto 0);
+        mem_adr : in std_logic_vector(GPIO_WIDTH - 1 downto 0);
 
-        gpio_in : in STD_LOGIC_VECTOR (255 downto 0);
-        gpio_out : out STD_LOGIC_VECTOR (255 downto 0) := (others => '0')
+        mem_read_data : out std_logic_vector(31 downto 0) := (others => '0');
+        mem_write_data : in std_logic_vector(31 downto 0);
+
+        -- External GPIO Memory Interface
+        gpio_in : in STD_LOGIC_VECTOR (GPIO_COUNT -1 downto 0);
+        gpio_out : out STD_LOGIC_VECTOR (GPIO_COUNT -1 downto 0) := (others => '0')
     );
 end vram_gpio;
 
--- Current Memory Map:
--- 0b0_0000 -> 0b0_1111: Output GPIOs
--- 0b1_0000 -> 0b1_1111: Input GPIOs
+-- GPIO Memory Map:
+-- 1. Output GPIOs
+-- 2. Input GPIOs
+-- Mapped according to the GPIO_COUNT generic.
 
 architecture Behavioral of vram_gpio is
-    signal trunc_addr : unsigned(3 downto 0);
+    signal gpio_addr : integer range 0 to GPIO_COUNT - 1 := 0;
 begin
-    trunc_addr <= unsigned(data_adr(5 downto 2));
+    -- Convert Byte Address to Bit Address
+    gpio_addr <= to_integer(unsigned(mem_adr)) * 8;
 
     -- Read data onto the data bus
-    process(data_clk, res_n) begin
+    process(clk, res_n) begin
         if (res_n = '0') then
-            data_out <= (others => '0');
-        elsif (rising_edge(data_clk)) then
-            if data_en = '1' then
-                 -- Low Addresses -> Output GPIOs are read
-                if trunc_addr(3) = '0' then
-                    data_out <= gpio_out(
-                        to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 31 downto
-                        to_integer(unsigned(trunc_addr(2 downto 0))) * 32)
-                    ;
+            mem_read_data <= (others => '0');
+        elsif (rising_edge(clk)) then
+            -- Enabled when enabled and not writing.
+            if (mem_en = '1' and mem_write = '0') then
+                -- MSB = 0 -> Output GPIOs are read
+                if mem_adr(GPIO_WIDTH - 1) = '0' then
+                    mem_read_data(7 downto 0) <= gpio_out(gpio_addr + 7 downto gpio_addr);
 
-                -- High Addresses -> Input GPIOs are read
+                    -- Only read when a half word or word is read.
+                    if (mem_size = "01" or mem_size = "10") then
+                        mem_read_data(15 downto 8) <= gpio_out(gpio_addr + 15 downto gpio_addr + 8);
+                    end if;
+
+                    -- Only read when a word is read.
+                    if (mem_size = "10") then
+                        mem_read_data(23 downto 16) <= gpio_out(gpio_addr + 23 downto gpio_addr + 16);
+                        mem_read_data(31 downto 24) <= gpio_out(gpio_addr + 31 downto gpio_addr + 24);
+                    end if;
+
+                -- MSB = 1 -> Input GPIOs are read (Current state)
                 else
-                    data_out <= gpio_in(
-                        to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 31 downto
-                        to_integer(unsigned(trunc_addr(2 downto 0))) * 32)
-                    ;
+                    mem_read_data(7 downto 0) <= gpio_in(gpio_addr + 7 downto gpio_addr);
+
+                    -- Only read when a half word or word is read.
+                    if (mem_size = "01" or mem_size = "10") then
+                        mem_read_data(15 downto 8) <= gpio_in(gpio_addr + 15 downto gpio_addr + 8);
+                    end if;
+
+                    -- Only read when a word is read.
+                    if (mem_size = "10") then
+                        mem_read_data(23 downto 16) <= gpio_in(gpio_addr + 23 downto gpio_addr + 16);
+                        mem_read_data(31 downto 24) <= gpio_in(gpio_addr + 31 downto gpio_addr + 24);
+                    end if;
                 end if;
-            else
-                data_out <= (others => '0');
             end if;
         end if;
     end process;
 
     -- Write data from the data bus
-    process(data_clk, res_n) begin
+    process(clk, res_n) begin
         if (res_n = '0') then
             gpio_out <= (others => '0');
-        elsif (rising_edge(data_clk)) then
-            if (data_en = '1') then
-                -- Low Addresses -> Output GPIOs are written
-                if trunc_addr(3) = '0' then
-                    if (data_wr(0) = '1') then
-                        gpio_out(
-                            to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 7 downto
-                            to_integer(unsigned(trunc_addr(2 downto 0))) * 32)
-                        <= data_in(7 downto 0);
+        elsif (rising_edge(clk)) then
+            -- Enabled when reading and writing.
+            if (mem_en = '1' and mem_write = '1') then
+                -- MSB = 0 -> Output GPIOs are written
+                if mem_adr(GPIO_WIDTH - 1) = '0' then
+                    gpio_out(gpio_addr + 7 downto gpio_addr) <= mem_write_data(7 downto 0);
+
+                    -- Only write when a half word or word is written.
+                    if (mem_size = "01" or mem_size = "10") then
+                        gpio_out(gpio_addr + 15 downto gpio_addr + 8) <= mem_write_data(15 downto 8);
                     end if;
 
-                    if (data_wr(1) = '1') then
-                        gpio_out(
-                            to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 15 downto
-                            to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 8)
-                        <= data_in(15 downto 8);
-                    end if;
-
-                    if (data_wr(2) = '1') then
-                        gpio_out(
-                            to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 23 downto
-                            to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 16)
-                        <= data_in(23 downto 16);
-                    end if;
-
-                    if (data_wr(3) = '1') then
-                        gpio_out(
-                            to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 31 downto
-                            to_integer(unsigned(trunc_addr(2 downto 0))) * 32 + 24)
-                        <= data_in(31 downto 24);
+                    -- Only write when a word is written.
+                    if (mem_size = "10") then
+                        gpio_out(gpio_addr + 23 downto gpio_addr + 16) <= mem_write_data(23 downto 16);
+                        gpio_out(gpio_addr + 31 downto gpio_addr + 24) <= mem_write_data(31 downto 24);
                     end if;
                 end if;
             end if;
         end if;
     end process;
-end Behavioral;
+end architecture Behavioral;

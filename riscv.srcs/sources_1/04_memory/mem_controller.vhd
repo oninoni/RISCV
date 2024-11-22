@@ -18,12 +18,30 @@ use ieee.math_real.all;
 
 entity mem_controller is
     generic (
-        BRAM_COUNT: integer := 4;
-        BRAM_WIDTH: integer := integer(ceil(log2(real(BRAM_COUNT))));
+        -- Base Address for instruction memory.
+        INSTRUCTION_BASE: STD_LOGIC_VECTOR(15 downto 0) := x"0000";
+        -- Base Address for GPIO memory.
+        GPIO_BASE: STD_LOGIC_VECTOR(15 downto 0) := x"0001";
 
-        INIT_VALUE : std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0')
+        -- Number of 16kB blocks.
+        BLOCK_COUNT: integer := 4;
+        -- Number of 4kB BRAMs.
+        BRAM_COUNT: integer := BLOCK_COUNT * 4;
+        -- Number of bits to address the BRAMs.
+        BRAM_WIDTH: integer := integer(ceil(log2(real(BRAM_COUNT))));
+        -- Number of bits to address a byte.
+        MEM_WIDTH : integer := 12 + BRAM_WIDTH;
+
+        -- All initial values for the BRAMs.
+        -- Size if the ammount of bits in all blocks.
+        INIT_VALUE: std_logic_vector(0 to 32768 * BRAM_COUNT - 1) := (others => '0');
+
+        -- Ammount of GPIO Pins
+        GPIO_COUNT: integer := 256;
+        -- Number of bits to address the GPIOs.
+        GPIO_WIDTH : integer := integer(ceil(log2(real(GPIO_COUNT)))) + 1 -- +1 for the read/write selection
     );
-    Port (
+    port (
         clk : in STD_LOGIC;
         res_n : in STD_LOGIC;
 
@@ -43,37 +61,66 @@ entity mem_controller is
         mem_write_data : in STD_LOGIC_VECTOR (31 downto 0);
 
         -- External GPIO Memory Interface
-        gpio_in : in STD_LOGIC_VECTOR (255 downto 0);
-        gpio_out : out STD_LOGIC_VECTOR (255 downto 0) := (others => '0')
+        gpio_in : in STD_LOGIC_VECTOR (GPIO_COUNT - 1 downto 0) := (others => '0');
+        gpio_out : out STD_LOGIC_VECTOR (GPIO_COUNT - 1 downto 0) := (others => '0')
     );
 end mem_controller;
 
-
 -- RAM Mapping:
--- FPGA has 50 36kb RAM blocks
--- We will need some for other stuff, so only a part will be used for general purpose RAM / Instruction Memory
+-- FPGA has 135 32kb BRAM blocks totaling 4.86MB of BRAM.
+-- We might need some for other stuff, so only a part will be used for general purpose RAM / Instruction Memory.
 -- Other RAM Mapped devices are added later.
 --
--- Current Memory Map:
--- 0x0000_0000 - 0x0000_FFFF: Instruction Memory (up to 16 x 32kb BRAMs, depending on BRAM_COUNT)
--- 0x0001_0000 - 0x0001_000F: GPIO_OUT (8 * 32bit GPIO Banks)
--- 0x0001_0020 - 0x0001_002F: GPIO_IN (8 * 32bit GPIO Banks)
+-- Default Memory Map:
+-- 0x0000_0000 - 0x0000_FFFF: Instruction Memory (16 x 32kb BRAMs)
+-- 0x0001_0000 - 0x0001_000F: GPIO_OUT (256b GPIO Banks)
+-- 0x0001_0020 - 0x0001_002F: GPIO_IN (256b GPIO Banks)
 -- 0x0001_0030 - 0x0001_FFFF: Reserved for GPIO Memory Expansion
 -- 0x0002_0000 - 0xFFFF_FFFF: Unused
+--
+-- The Memory Controller uses 2 memory channels to access the memory devices.
+-- The first general is general purpose and can be used for any memory device.
+-- The second channel is used for the instruction memory and is only used for reading instructions.
+-- If the instruction memory acceses a different memory device an exception should be thrown. TODO: Implement Exception Handling
+
+-- If the memory acceses an unimplemented memory device, an exception should be thrown. TODO: Implement Exception Handling
+-- Same for unsupported memory sizes for instruction fetches.
 
 architecture Behavioral of mem_controller is
-    signal read_enable : std_logic;
-    signal ram_rd_internal : std_logic_vector(31 downto 0);
+    -- Shared signals.
+    signal mem_read_data_internal : std_logic_vector(31 downto 0) := (others => '0');
 
-    signal ins_en : std_logic;
-    signal gpio_en : std_logic;
-    signal ram_rd_instruction : std_logic_vector(31 downto 0) := (others => '0');
-    signal ram_rd_gpio : std_logic_vector(31 downto 0) := (others => '0');
+    -- Instruction Memory Bank
+    signal ins_en : std_logic := '0'; -- Instruction Memory Enable
+    signal ins_read_data : std_logic_vector(31 downto 0) := (others => '0'); -- Instruction Memory Read Data
 
-    signal write_enable : std_logic_vector(3 downto 0);
-    signal ram_wd_internal : std_logic_vector(31 downto 0);
-
+    -- GPIO Memory Interface
+    signal gpio_en : std_logic := '0'; -- GPIO Memory Enable
+    signal gpio_read_data : std_logic_vector(31 downto 0) := (others => '0'); -- GPIO Memory Read Data
 begin
+    --------------------------------
+    --       Memory Mapping       --
+    --------------------------------
+
+    -- Memory Map Control Signals / Read Data Multiplexer
+    process(all) begin
+        ins_en <= '0';
+        gpio_en <= '0';
+
+        case mem_adr(31 downto 16) is
+        when INSTRUCTION_BASE =>
+            ins_en <= mem_read or mem_write;
+            mem_read_data_internal <= ins_read_data;
+
+        when GPIO_BASE =>
+            gpio_en <= mem_read or mem_write;
+            mem_read_data_internal <= gpio_read_data;
+
+        when others =>
+            mem_read_data_internal <= (others => '0');
+        end case;
+    end process;
+
     --------------------------------
     --       Memory Devices       --
     --------------------------------
@@ -81,250 +128,84 @@ begin
     -- Instruction Memory Bank
     bram_instruction : entity work.bram_instruction
     generic map (
-        BRAM_COUNT => BRAM_COUNT,
+        BLOCK_COUNT => BLOCK_COUNT,
+
         INIT_VALUE => INIT_VALUE
     ) port map (
-        data_clk => clk,
-        data_en => ins_en,
+        clk => clk,
 
-        data_wr => write_enable,
-        data_adr => mem_adr(11 + BRAM_WIDTH downto 0),
+        -- Stage 1: Instruction Fetch
+        pc => pc(MEM_WIDTH - 1 downto 0),
+        instruction => instruction,
 
-        data_out => ram_rd_instruction,
-        data_in => ram_wd_internal,
+        -- Stage 4: Memory Access
+        mem_en => ins_en,
+        mem_write => mem_write,
+        mem_size => mem_size,
 
-        instruction_clk => clk,
-        instruction_adr => pc(11 + BRAM_WIDTH downto 0),
-        instruction_out => instruction
+        mem_adr => mem_adr(MEM_WIDTH - 1 downto 0),
+
+        mem_read_data => ins_read_data,
+        mem_write_data => mem_write_data
     );
 
     -- GPIO Memory Interface
     vram_gpio : entity work.vram_gpio
-    port map (
-        data_clk => clk,
+    generic map (
+        GPIO_COUNT => GPIO_COUNT
+    ) port map (
+        clk => clk,
         res_n => res_n,
-        data_en => gpio_en,
 
-        data_wr => write_enable,
-        data_adr => mem_adr(5 downto 0),
+        -- Stage 4: Memory Access
+        mem_en => gpio_en,
+        mem_write => mem_write,
+        mem_size => mem_size,
 
-        data_out => ram_rd_gpio,
-        data_in => ram_wd_internal,
+        mem_adr => mem_adr(GPIO_WIDTH - 1 downto 0),
 
+        mem_read_data => gpio_read_data,
+        mem_write_data => mem_write_data,
+
+        -- External GPIO Memory Interface
         gpio_in => gpio_in,
         gpio_out => gpio_out
     );
 
     --------------------------------
-    --       Memory Mapping       --
+    --       Word Extension       --
     --------------------------------
 
-    -- Memory Map Control Signals
+    -- Memory reading needs to be masked depending on the size of the memory access.
+    -- And it needs to be bit extended depending on if it is signed or unsigned.
     process(all) begin
-        ins_en <= '0';
-        gpio_en <= '0';
+        if (mem_read = '1') then
+            case (mem_size) is
+            when "00" => -- Byte
+                mem_read_data(7 downto 0) <= mem_read_data_internal(7 downto 0);
 
-        -- Instruction Memory
-        if mem_adr(31 downto 16) = x"0000" then
-            ins_en <= read_enable or write_enable(3) or write_enable(2) or write_enable(1) or write_enable(0);
+                if (mem_signed = '1') then
+                    mem_read_data(31 downto 8) <= (others => mem_read_data_internal(7));
+                else
+                    mem_read_data(31 downto 8) <= (others => '0');
+                end if;
+            when "01" => -- Halfword
+                mem_read_data(15 downto 0) <= mem_read_data_internal(15 downto 0);
 
-        -- GPIO Memory
-        elsif mem_adr(31 downto 16) = x"0001" then
-            gpio_en <= read_enable or write_enable(3) or write_enable(2) or write_enable(1) or write_enable(0);
+                if (mem_signed = '1') then
+                    mem_read_data(31 downto 16) <= (others => mem_read_data_internal(15));
+                else
+                    mem_read_data(31 downto 16) <= (others => '0');
 
+                end if;
+            when "10" => -- Word (Does not need sign extension, since it is already 32bit)
+                mem_read_data <= mem_read_data_internal;
+
+            when others =>
+                mem_read_data <= (others => '0');
+            end case;
+        else
+            mem_read_data <= (others => '0');
         end if;
     end process;
-
-    -- Memory Map Read Multiplexer
-    process(all) begin
-        case (mem_adr(31 downto 16)) is
-        when x"0000" => -- Instruction Memory
-            ram_rd_internal <= ram_rd_instruction;
-        when x"0001" => -- GPIO Memory
-            ram_rd_internal <= ram_rd_gpio;
-        when others =>
-            ram_rd_internal <= (others => '0');
-        end case;
-    end process;
-
-    --------------------------------
-    --        Byte Masking        --
-    --------------------------------
-
-    -- Data Read Byte Masking
-    process(all) begin -- Temporarily disabled
-        read_enable <= '0';
-        mem_read_data <= (others => '0');
-    end process;
-
-    -- Data Write Byte Masking
-    process(all) begin -- Temporarily disabled
-        write_enable <= "0000";
-        ram_wd_internal <= (others => '0');
-    end process;
 end Behavioral;
-
---        case (opcode) is
---        when "0000011" => -- L-Type (Load, res = address)
---            case (funct3) is
---            when "000" => -- LB
---                case (mem_adr(1 downto 0)) is
---                when "00" => -- 0-7
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 8 => ram_rd_internal(7),
---                                7 downto 0 => ram_rd_internal(7 downto 0));
---                when "01" => -- 8-15
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 8 => ram_rd_internal(15),
---                                7 downto 0 => ram_rd_internal(15 downto 8));
---                when "10" => -- 16-23
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 8 => ram_rd_internal(23),
---                                7 downto 0 => ram_rd_internal(23 downto 16));
---                when "11" => -- 24-31
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 8 => ram_rd_internal(31),
---                                7 downto 0 => ram_rd_internal(31 downto 24));
---
---                when others => -- Misaligned Access (Exception)
---                    read_enable <= '0';
---                    mem_read_data <= (others => '0');
---                end case;
---            when "001" => -- LH
---                case(mem_adr(1 downto 0)) is
---                when "00" => -- 0-15
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 16 => ram_rd_internal(15),
---                                15 downto 0 => ram_rd_internal(15 downto 0));
---                when "10" => -- 16-31
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 16 => ram_rd_internal(31),
---                                15 downto 0 => ram_rd_internal(31 downto 16));
---
---                when others => -- Misaligned Access (Exception)
---                    read_enable <= '0';
---                    mem_read_data <= (others => '0');
---                end case;
---            when "010" => -- LW
---                case (mem_adr(1 downto 0)) is
---                when "00" => -- 0-31
---                    read_enable <= '1';
---                    mem_read_data <= ram_rd_internal;
---
---                when others => -- Misaligned Access (Exception)
---                    read_enable <= '0';
---                    mem_read_data <= (others => '0');
---                end case;
---            when "100" => -- LBU
---                case (mem_adr(1 downto 0)) is
---                when "00" => -- 0-7
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 8 => '0',
---                                7 downto 0 => ram_rd_internal(7 downto 0));
---                when "01" => -- 8-15
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 8 => '0',
---                                7 downto 0 => ram_rd_internal(15 downto 8));
---                when "10" => -- 16-23
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 8 => '0',
---                                7 downto 0 => ram_rd_internal(23 downto 16));
---                when "11" => -- 24-31
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 8 => '0',
---                                7 downto 0 => ram_rd_internal(31 downto 24));
---
---                when others => -- Misaligned Access (Exception)
---                    read_enable <= '0';
---                    mem_read_data <= (others => '0');
---                end case;
---            when "101" => -- LHU
---                case(mem_adr(1 downto 0)) is
---                when "00" => -- 0-15
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 16 => '0',
---                                15 downto 0 => ram_rd_internal(15 downto 0));
---                when "10" => -- 16-31
---                    read_enable <= '1';
---                    mem_read_data <= ( 31 downto 16 => '0',
---                                15 downto 0 => ram_rd_internal(31 downto 16));
---
---                when others => -- Misaligned Access (Exception)
---                    read_enable <= '0';
---                    mem_read_data <= (others => '0');
---                end case;
---
---            when others =>
---                read_enable <= '0';
---                mem_read_data <= (others => '0');
---            end case;
---        when others =>
---            read_enable <= '0';
---            mem_read_data <= (others => '0');
---        end case;
-
-
---        case (opcode) is
---        when "0100011" => -- S-Type (Store, res = address)
---            case (funct3) is
---            when "000" => -- SB
---                case (mem_adr(1 downto 0)) is
---                when "00" => -- 0-7
---                    write_enable <= "1000";
---                    ram_wd_internal <= (31 downto 24 => rd2(7 downto 0),
---                                        23 downto 0 => '0');
---                when "01" => -- 8-15
---                    write_enable <= "0100";
---                    ram_wd_internal <= (31 downto 24 => '0',
---                                        23 downto 16 => rd2(7 downto 0),
---                                        15 downto 0 => '0');
---                when "10" => -- 16-23
---                    write_enable <= "0010";
---                    ram_wd_internal <= (31 downto 16 => '0',
---                                        15 downto 8 => rd2(7 downto 0),
---                                        7 downto 0 => '0');
---                when "11" => -- 24-31
---                    write_enable <= "0001";
---                    ram_wd_internal <= (31 downto 8 => '0',
---                                        7 downto 0 => rd2(7 downto 0));
---
---                when others => -- Misaligned Access (Exception)
---                    write_enable <= "0000";
---                    ram_wd_internal <= (others => '0');
---                end case;
---            when "001" => -- SH
---                case(mem_adr(1 downto 0)) is
---                when "00" => -- 0-15
---                    write_enable <= "0011";
---                    ram_wd_internal <= (31 downto 16 => '0',
---                                        15 downto 0 => rd2(15 downto 0));
---                when "10" => -- 16-31
---                    write_enable <= "1100";
---                    ram_wd_internal <= (31 downto 16 => rd2(15 downto 0),
---                                        15 downto 0 => '0');
---
---                when others => -- Misaligned Access (Exception)
---                    write_enable <= "0000";
---                    ram_wd_internal <= (others => '0');
---                end case;
---            when "010" => -- SW
---                case (mem_adr(1 downto 0)) is
---                when "00" => -- 0-31
---                    write_enable <= "1111";
---                    ram_wd_internal <= rd2;
---
---                when others => -- Misaligned Access (Exception)
---                    write_enable <= "0000";
---                    ram_wd_internal <= (others => '0');
---                end case;
---            when
---
---            others =>
---                write_enable <= "0000";
---                ram_wd_internal <= (others => '0');
---            end case;
---        when others =>
---            write_enable <= "0000";
---            ram_wd_internal <= (others => '0');
---        end case;
---    end process;
