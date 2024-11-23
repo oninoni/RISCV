@@ -17,11 +17,11 @@ use ieee.numeric_std.all;
 
 entity branch_logic is
     Port (
-        opcode : in STD_LOGIC_VECTOR (6 downto 0);
-        funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+        bra_sel : in STD_LOGIC_VECTOR (2 downto 0);
 
-        rd1 : in STD_LOGIC_VECTOR (31 downto 0);
-        rd2 : in STD_LOGIC_VECTOR (31 downto 0);
+        eq : in STD_LOGIC;
+        lt : in STD_LOGIC;
+        ltu : in STD_LOGIC;
 
         branch : out STD_LOGIC
     );
@@ -29,55 +29,26 @@ end branch_logic;
 
 architecture Behavioral of branch_logic is
 begin
-    process(all)
+    process(all) is
     begin
-        if (opcode = "1100011") then
-            case (funct3) is
-            when "000" => -- BEQ
-                if (rd1 = rd2) then
-                    branch <= '1';
-                else
-                    branch <= '0';
-                end if;
-            when "001" => -- BNE
-                if (rd1 /= rd2) then
-                    branch <= '1';
-                else
-                    branch <= '0';
-                end if;
-
+        case bra_sel is
+            when "001" => -- JAL JALR
+                branch <= '1';
+            when "010" => -- BEQ
+                branch <= eq;
+            when "011" => -- BNE
+                branch <= not eq;
             when "100" => -- BLT
-                if (signed(rd1) < signed(rd2)) then
-                    branch <= '1';
-                else
-                    branch <= '0';
-                end if;
+                branch <= lt;
             when "101" => -- BGE
-                if (signed(rd1) >= signed(rd2)) then
-                    branch <= '1';
-                else
-                    branch <= '0';
-                end if;
-
+                branch <= not lt or eq;
             when "110" => -- BLTU
-                if (unsigned(rd1) < unsigned(rd2)) then
-                    branch <= '1';
-                else
-                    branch <= '0';
-                end if;
+                branch <= ltu;
             when "111" => -- BGEU
-                if (unsigned(rd1) >= unsigned(rd2)) then
-                    branch <= '1';
-                else
-                    branch <= '0';
-                end if;
+                branch <= not ltu or eq;
 
             when others =>
                 branch <= '0';
-            end case;
-        else
-            branch <= '0';
-        end if;
+        end case;
     end process;
-
 end Behavioral;

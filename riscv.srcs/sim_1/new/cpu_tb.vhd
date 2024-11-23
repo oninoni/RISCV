@@ -36,5 +36,5 @@ begin
     );
 
     clk <= not clk after 5 ns;
-    res_n <= '1' after 20 ns;
+    res_n <= '1' after 2 us;
 end Behavioral;

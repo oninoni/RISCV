@@ -41,3 +41,11 @@ LH s1, 0(sp)
 LHU s2, 0(sp)
 LB s3, 0(sp)
 LBU s4, 0(sp)
+ADD t0, x0, x0
+NOP
+NOP
+LOOP:
+ADDI t0, t0, 1
+NOP
+NOP
+JAL x0, LOOP

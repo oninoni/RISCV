@@ -26,7 +26,12 @@ entity alu is
 		pc : in STD_LOGIC_VECTOR (31 downto 0);
 		imm : in STD_LOGIC_VECTOR (31 downto 0);
 
-        res : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0')
+        res : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+
+        -- Compare Result for branching
+        eq : out STD_LOGIC;
+        lt : out STD_LOGIC;
+        ltu : out STD_LOGIC
     );
 end alu;
 
@@ -128,11 +133,14 @@ begin
         ltu => com_ltu
     );
 
-    -- TODO: Handle branching output.
+    -- Handle branching output.
+    eq <= com_eq;
+    lt <= com_lt;
+    ltu <= com_ltu;
 
     -- Switch the input for the compare operation when needed for branching.
     -- Branch Commands use pc + imm for the target address, which is calculated in the execute stage.
-    -- This connects rd1 and rd2 to the compare operation when not in a compare operation.
+    -- This hard-connects rd1 and rd2 to the compare operation when not in a compare operation.
     comparator_sel_in: process(all)
     begin
         if (alu_op = "11") then

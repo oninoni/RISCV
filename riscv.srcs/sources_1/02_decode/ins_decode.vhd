@@ -39,6 +39,17 @@ entity ins_decode is
         -- Additional mode bits for ALU.
         alu_mode : out STD_LOGIC_VECTOR (1 downto 0) := (others => '0');
 
+        -- Branch Control Signals
+        bra_sel : out STD_LOGIC_VECTOR (2 downto 0) := (others => '0');
+        -- 000 : None
+        -- 001 : JAL / JALR Same except for how the pc is calculated in the ALU.
+        -- 010 : BEQ
+        -- 011 : BNE
+        -- 100 : BLT
+        -- 101 : BGE
+        -- 110 : BLTU
+        -- 111 : BGEU
+
         -- Stage 4: Memory Access
 
         -- Memory Control Signals
@@ -218,6 +229,38 @@ begin
         when others => -- TODO: Exception
             alu_op <= "00";
             alu_mode <= "00";
+        end case;
+    end process;
+
+    -- Branch Control Signal Generation
+    process(all)
+    begin
+        case (opcode) is
+        when "1100011" => -- B-Type (Branch)
+            case (funct3) is
+            when "000" => -- BEQ
+                bra_sel <= "010"; -- BEQ
+            when "001" => -- BNE
+                bra_sel <= "011"; -- BNE
+            when "100" => -- BLT
+                bra_sel <= "100"; -- BLT
+            when "101" => -- BGE
+                bra_sel <= "101"; -- BGE
+            when "110" => -- BLTU
+                bra_sel <= "110"; -- BLTU
+            when "111" => -- BGEU
+                bra_sel <= "111"; -- BGEU
+
+            when others => -- TODO: Exception
+                bra_sel <= "000";
+            end case;
+        when "1101111" => -- J-Type (JAL)
+            bra_sel <= "001"; -- JAL
+        when "1100111" => -- I-Type (JALR)
+            bra_sel <= "001"; -- JALR
+
+        when others => -- TODO: Exception
+            bra_sel <= "000";
         end case;
     end process;
 

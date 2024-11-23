@@ -103,7 +103,8 @@ begin
     --------------------------------
 
     -- Memory Map Control Signals / Read Data Multiplexer
-    process(all) begin
+    process(all)
+    begin
         ins_en <= '0';
         gpio_en <= '0';
 
@@ -178,7 +179,8 @@ begin
 
     -- Memory reading needs to be masked depending on the size of the memory access.
     -- And it needs to be bit extended depending on if it is signed or unsigned.
-    process(all) begin
+    process(all)
+    begin
         if (mem_read = '1') then
             case (mem_size) is
             when "00" => -- Byte

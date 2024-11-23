@@ -84,7 +84,7 @@ architecture Behavioral of cpu_pipelined is
     signal imm : std_logic_vector(31 downto 0) := (others => '0');
 
     -- Control Signals
-    signal ex_control : std_logic_vector(5 downto 0) := "000000";
+    signal ex_control : std_logic_vector(8 downto 0) := "000000000";
     signal mem_control : std_logic_vector(4 downto 0) := "00000";
     signal wb_control : std_logic_vector(2 downto 0) := "000";
 
@@ -105,19 +105,24 @@ architecture Behavioral of cpu_pipelined is
 
     signal pipe_ex_imm : std_logic_vector(31 downto 0) := (others => '0');
 
-    signal pipe_ex_ex_control : std_logic_vector(5 downto 0) := "000000";
+    signal pipe_ex_ex_control : std_logic_vector(8 downto 0) := "000000000";
     signal pipe_ex_mem_control : std_logic_vector(4 downto 0) := "00000";
     signal pipe_ex_wb_control : std_logic_vector(2 downto 0) := "000";
 
     -- All pipeline signals combined into one vector, so it can be attached to the pipeline register.
-    signal pipe_ex_in : std_logic_vector(178 downto 0) := (others => '0');
-    signal pipe_ex_out : std_logic_vector(178 downto 0) := (others => '0');
+    signal pipe_ex_in : std_logic_vector(181 downto 0) := (others => '0');
+    signal pipe_ex_out : std_logic_vector(181 downto 0) := (others => '0');
 
     -- ALU Signals
     signal res : std_logic_vector(31 downto 0) := (others => '0');
 
-    -- Branch Logic Signals
-    -- TODO
+    -- ALU Compare Signals
+    signal eq : std_logic := '0';
+    signal lt : std_logic := '0';
+    signal ltu : std_logic := '0';
+
+    -- Branch Signals
+    signal branch : std_logic := '0';
 
     -- Stage 4: Memory Read / Write Signals
 
@@ -167,8 +172,8 @@ begin
 
     -- Program Counter
     program_counter: entity work.program_counter
-    port map ( -- TODO: Redo
-        clk => not clk, -- TODO: Check edge
+    port map (
+        clk => clk,
         res_n => res_n,
 
         -- Stage 1: Instruction Fetch
@@ -176,8 +181,8 @@ begin
         pc_4 => pc_4,
 
         -- Stage ?: Branch
-        branch => '0',
-        set => (others => '0')
+        branch => branch,
+        set => res
     );
 
     -- Pipeline Register: Instruction Fetch -> Instruction Decode
@@ -219,9 +224,11 @@ begin
         imm => imm,
 
         -- Execution Control Signals
-        alu_op => ex_control(5 downto 4),
-        alu_mode => ex_control(3 downto 2),
-        op_sel => ex_control(1 downto 0),
+        alu_op => ex_control(8 downto 7),
+        alu_mode => ex_control(6 downto 5),
+        op_sel => ex_control(4 downto 3),
+
+        bra_sel => ex_control(2 downto 0),
 
         -- Stage 4: Memory Read / Write
 
@@ -246,7 +253,7 @@ begin
         STACK_POINTER_INIT => STACK_POINTER_INIT
     )
     port map (
-        clk => not clk, -- TODO: Check edge
+        clk => not clk,
         res_n => res_n,
 
         -- Stage 2: Instruction Decode
@@ -278,13 +285,13 @@ begin
 
     pipe_ex_in <= pipe_id_pc & pipe_id_pc_4 & rd & rd1 & rd2 & imm & ex_control & mem_control & wb_control;
 
-    pipe_ex_pc <= pipe_ex_out(178 downto 147);
-    pipe_ex_pc_4 <= pipe_ex_out(146 downto 115);
-    pipe_ex_rd <= pipe_ex_out(114 downto 110);
-    pipe_ex_rd1 <= pipe_ex_out(109 downto 78);
-    pipe_ex_rd2 <= pipe_ex_out(77 downto 46);
-    pipe_ex_imm <= pipe_ex_out(45 downto 14);
-    pipe_ex_ex_control <= pipe_ex_out(13 downto 8);
+    pipe_ex_pc <= pipe_ex_out(181 downto 150);
+    pipe_ex_pc_4 <= pipe_ex_out(149 downto 118);
+    pipe_ex_rd <= pipe_ex_out(117 downto 113);
+    pipe_ex_rd1 <= pipe_ex_out(112 downto 81);
+    pipe_ex_rd2 <= pipe_ex_out(80 downto 49);
+    pipe_ex_imm <= pipe_ex_out(48 downto 17);
+    pipe_ex_ex_control <= pipe_ex_out(16 downto 8);
     pipe_ex_mem_control <= pipe_ex_out(7 downto 3);
     pipe_ex_wb_control <= pipe_ex_out(2 downto 0);
 
@@ -297,7 +304,7 @@ begin
     -- ALU
     alu: entity work.alu
     port map (
-        alu_control => pipe_ex_ex_control,
+        alu_control => pipe_ex_ex_control(8 downto 3),
 
         -- Input signals
         rd1 => pipe_ex_rd1,
@@ -307,24 +314,25 @@ begin
         imm => pipe_ex_imm,
 
         -- Output signals
-        res => res
+        res => res,
+
+        -- Compare Signals
+        eq => eq,
+        lt => lt,
+        ltu => ltu
     );
 
-    -- TODO: Implement branching
---    -- Branch Logic
---    branch_logic: entity work.branch_logic
---    port map (
---        -- Instruction signals
---        opcode => pipe_ex_opcode,
---        funct3 => pipe_ex_funct3,
---
---        -- Input signals
---        rd1 => pipe_ex_rd1,
---        rd2 => pipe_ex_rd2,
---
---        -- Output signals
---        branch => branch
---    );
+    -- Branch Logic
+    branch_logic: entity work.branch_logic
+    port map (
+        bra_sel => pipe_ex_ex_control(2 downto 0),
+
+        eq => eq,
+        lt => lt,
+        ltu => ltu,
+
+        branch => branch
+    );
 
     -- Pipeline Register
     pipeline_register_mem: entity work.pipeline_register

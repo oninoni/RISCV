@@ -11,14 +11,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="40.520001 us"></ZoomEndTime>
-      <Cursor1Time time="35.000000 us"></Cursor1Time>
+      <ZoomEndTime time="101.700001 us"></ZoomEndTime>
+      <Cursor1Time time="70.000000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="383"></NameColumnWidth>
-      <ValueColumnWidth column_width="542"></ValueColumnWidth>
+      <ValueColumnWidth column_width="534"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="48" />
+   <WVObjectSize size="50" />
    <wvobject fp_name="/cpu_tb/top/cpu_pipelined/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -116,6 +116,14 @@
       <obj_property name="ElementShortName">alu_mode[1:0]</obj_property>
       <obj_property name="ObjectShortName">alu_mode[1:0]</obj_property>
       <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/branch_logic/bra_sel" type="array">
+      <obj_property name="ElementShortName">bra_sel[2:0]</obj_property>
+      <obj_property name="ObjectShortName">bra_sel[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_tb/top/cpu_pipelined/branch_logic/branch" type="logic">
+      <obj_property name="ElementShortName">branch</obj_property>
+      <obj_property name="ObjectShortName">branch</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider65">
       <obj_property name="label">EX / MEM Pipeline</obj_property>
