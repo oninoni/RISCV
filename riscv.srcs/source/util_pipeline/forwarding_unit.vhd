@@ -24,6 +24,6 @@ entity forwarding_unit is
 		rs2 : in std_logic_vector(4 downto 0);
 
 		rd1 : in std_logic_vector(31 downto 0);
-		rd2 : in std_logic_vector(31 downto 0);
+		rd2 : in std_logic_vector(31 downto 0)
 	);
 end forwarding_unit;
