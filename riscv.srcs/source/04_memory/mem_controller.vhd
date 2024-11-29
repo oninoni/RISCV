@@ -89,6 +89,7 @@ end mem_controller;
 architecture Behavioral of mem_controller is
     -- Shared signals.
     signal mem_read_data_internal : std_logic_vector(31 downto 0) := (others => '0');
+    signal instruction_internal : std_logic_vector(31 downto 0) := (others => '0');
 
     -- Instruction Memory Bank
     signal ins_en : std_logic := '0'; -- Instruction Memory Enable
@@ -97,6 +98,9 @@ architecture Behavioral of mem_controller is
     -- GPIO Memory Interface
     signal gpio_en : std_logic := '0'; -- GPIO Memory Enable
     signal gpio_read_data : std_logic_vector(31 downto 0) := (others => '0'); -- GPIO Memory Read Data
+
+    -- PC Enable
+    signal pc_en : std_logic := '0';
 begin
     --------------------------------
     --       Memory Mapping       --
@@ -120,6 +124,16 @@ begin
         when others =>
             mem_read_data_internal <= (others => '0');
         end case;
+
+        case pc(31 downto 16) is
+        when INSTRUCTION_BASE =>
+            pc_en <= '1';
+            instruction <= instruction_internal;
+
+        when others =>
+            pc_en <= '0';
+            instruction <= (others => '0');
+        end case;
     end process;
 
     --------------------------------
@@ -136,8 +150,11 @@ begin
         clk => clk,
 
         -- Stage 1: Instruction Fetch
+        pc_en => pc_en,
+
         pc => pc(MEM_WIDTH - 1 downto 0),
-        instruction => instruction,
+
+        instruction => instruction_internal,
 
         -- Stage 4: Memory Access
         mem_en => ins_en,

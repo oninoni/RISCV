@@ -72,10 +72,14 @@ architecture Behavioral of top is
 
     constant INIT_VALUE : std_logic_vector((BRAM_COUNT * 32768) - 1 downto 0) := convert_program(program);
 
-    signal clk_divider : unsigned(23 downto 0) := (others => '0');
-    signal clk_Segments : std_logic := '0';
-    signal clk_Debounce : std_logic := '0';
-    signal clk_CPU : std_logic := '0';
+    signal clk_100 : std_logic;
+    signal clk_25 : std_logic;
+    signal clk_10 : std_logic;
+
+    signal clk_Segments : std_logic;
+    signal clk_Debounce : std_logic;
+    signal clk_CPU : std_logic;
+    signal locked : std_logic;
 
     signal res_n : std_logic := '0';
 
@@ -85,19 +89,24 @@ architecture Behavioral of top is
     signal gpio_in_debounce : std_logic_vector(20 downto 0) := (others => '1');
     signal gpio_out_debounce : std_logic_vector(20 downto 0) := (others => '1');
 begin
-    -- Clock divider
-    process(CLK100MHZ)
-    begin
-        if rising_edge(CLK100MHZ) then
-            clk_divider <= clk_divider + 1;
-        end if;
-    end process;
+    -- PLL
+    pll : entity work.clk_wiz_0
+    port map (
+        clk_in1 => CLK100MHZ,
+        resetn => CPU_RESETN,
 
-    clk_Segments <= clk_divider(17);
-    clk_Debounce <= clk_divider(15);
-    clk_CPU <= clk_divider(5);
+        clk_100 => clk_100,
+        clk_25 => clk_25,
+        clk_10 => clk_10,
+        locked => locked
+    );
 
-    res_n <= CPU_RESETN;
+    clk_Segments <= clk_25;
+    clk_Debounce <= clk_25;
+    clk_CPU <= clk_25;
+
+    -- Reset is asserted when the CPU_RESETN signal is low or when the pll is not yet ready.
+    res_n <= CPU_RESETN and locked;
 
     -- Debouncer
     debouncer : entity work.debouncer

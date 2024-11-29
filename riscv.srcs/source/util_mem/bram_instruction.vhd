@@ -35,7 +35,10 @@ entity bram_instruction is
         clk : in std_logic;
 
         -- Stage 1: Instruction Fetch
+        pc_en : in std_logic;
+
         pc : in std_logic_vector(MEM_WIDTH - 1 downto 0);
+
         instruction : out std_logic_vector(31 downto 0) := (others => '0');
 
         -- Stage 4: Memory Access
@@ -101,11 +104,17 @@ architecture Behavioral of bram_instruction is
     signal bram_ins_en : std_logic_vector(BRAM_COUNT - 1 downto 0) := (others => '0');
     signal ins_out : std_logic_aoa(0 to BRAM_COUNT - 1)(7 downto 0) := (others => "00000000");
 
+    -- Offset memory address for the instruction memory.
+    signal ins_addr_0 : std_logic_vector(MEM_WIDTH - 1 downto 0) := (others => '0');
+    signal ins_addr_1 : std_logic_vector(MEM_WIDTH - 1 downto 0) := (others => '0');
+    signal ins_addr_2 : std_logic_vector(MEM_WIDTH - 1 downto 0) := (others => '0');
+    signal ins_addr_3 : std_logic_vector(MEM_WIDTH - 1 downto 0) := (others => '0');
+
     -- Address Decoder signals for all 4 active BRAMs.
-    signal ins_addr_0 : integer := 0;
-    signal ins_addr_1 : integer := 0;
-    signal ins_addr_2 : integer := 0;
-    signal ins_addr_3 : integer := 0;
+    signal ins_bram_addr_0 : integer := 0;
+    signal ins_bram_addr_1 : integer := 0;
+    signal ins_bram_addr_2 : integer := 0;
+    signal ins_bram_addr_3 : integer := 0;
 
     -- Memory Interface
     signal bram_mem_en : std_logic_vector(BRAM_COUNT - 1 downto 0) := (others => '0');
@@ -161,15 +170,14 @@ begin
         );
     end generate;
 
-    -- Instruction address is simple, since they are not misaligned.
-    ins_addr_3 <= to_integer(unsigned(pc(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2)) * 4 + unsigned(pc(1 downto 0)));
-    ins_addr_2 <= (ins_addr_3 + 1) mod BRAM_COUNT;
-    ins_addr_1 <= (ins_addr_3 + 2) mod BRAM_COUNT;
-    ins_addr_0 <= (ins_addr_3 + 3) mod BRAM_COUNT;
-
     -- Now, The theory is that all 4 "active" brams have their own address.
     -- The address of the most significant Byte is taken from the MSB of the memory address.
     -- The other 3 words are addressed as +1, +2, +3 respectively.
+    ins_addr_3 <= std_logic_vector(unsigned(pc) + 0);
+    ins_addr_2 <= std_logic_vector(unsigned(pc) + 1);
+    ins_addr_1 <= std_logic_vector(unsigned(pc) + 2);
+    ins_addr_0 <= std_logic_vector(unsigned(pc) + 3);
+
     mem_addr_3 <= std_logic_vector(unsigned(mem_adr) + 0);
     mem_addr_2 <= std_logic_vector(unsigned(mem_adr) + 1);
     mem_addr_1 <= std_logic_vector(unsigned(mem_adr) + 2);
@@ -177,6 +185,11 @@ begin
 
     -- When the address reaches the end of the block, it wraps around to the beginning.
     -- This is not a problem, since such an access is blocked in a higher level module.
+    ins_bram_addr_3 <= (to_integer(unsigned(ins_addr_3(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(ins_addr_3(1 downto 0)))) mod BRAM_COUNT;
+    ins_bram_addr_2 <= (to_integer(unsigned(ins_addr_2(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(ins_addr_2(1 downto 0)))) mod BRAM_COUNT;
+    ins_bram_addr_1 <= (to_integer(unsigned(ins_addr_1(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(ins_addr_1(1 downto 0)))) mod BRAM_COUNT;
+    ins_bram_addr_0 <= (to_integer(unsigned(ins_addr_0(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(ins_addr_0(1 downto 0)))) mod BRAM_COUNT;
+
     mem_bram_addr_3 <= (to_integer(unsigned(mem_addr_3(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(mem_addr_3(1 downto 0)))) mod BRAM_COUNT;
     mem_bram_addr_2 <= (to_integer(unsigned(mem_addr_2(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(mem_addr_2(1 downto 0)))) mod BRAM_COUNT;
     mem_bram_addr_1 <= (to_integer(unsigned(mem_addr_1(MEM_WIDTH - 1 downto MEM_WIDTH - BRAM_WIDTH + 2))) * 4 + to_integer(unsigned(mem_addr_1(1 downto 0)))) mod BRAM_COUNT;
@@ -189,10 +202,10 @@ begin
     begin
         -- Instruction memory is always used with full width.
         temp_ins := (others => '0');
-        temp_ins(ins_addr_3) := '1';
-        temp_ins(ins_addr_2) := '1';
-        temp_ins(ins_addr_1) := '1';
-        temp_ins(ins_addr_0) := '1';
+        temp_ins(ins_bram_addr_3) := pc_en;
+        temp_ins(ins_bram_addr_2) := pc_en;
+        temp_ins(ins_bram_addr_1) := pc_en;
+        temp_ins(ins_bram_addr_0) := pc_en;
 
         bram_ins_en <= temp_ins;
 
@@ -250,8 +263,13 @@ begin
     -- Generate the output signals.
     process(all)
     begin
-        mem_in <= (others => (others => '0'));
+        if (pc_en = '1') then
+            instruction <= ins_out(ins_bram_addr_3) & ins_out(ins_bram_addr_2) & ins_out(ins_bram_addr_1) & ins_out(ins_bram_addr_0);
+        else
+            instruction <= (others => '0');
+        end if;
 
+        mem_in <= (others => (others => '0'));
         if (mem_en = '1') then
             mem_read_data <= mem_out(mem_bram_addr_3) & mem_out(mem_bram_addr_2) & mem_out(mem_bram_addr_1) & mem_out(mem_bram_addr_0);
 
@@ -263,8 +281,6 @@ begin
             mem_read_data <= (others => '0');
         end if;
     end process;
-
-    instruction <= ins_out(ins_addr_3) & ins_out(ins_addr_2) & ins_out(ins_addr_1) & ins_out(ins_addr_0);
 end Behavioral;
 
 
