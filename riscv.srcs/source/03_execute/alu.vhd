@@ -31,7 +31,15 @@ entity alu is
         -- Compare Result for branching
         eq : out STD_LOGIC;
         lt : out STD_LOGIC;
-        ltu : out STD_LOGIC
+        ltu : out STD_LOGIC;
+
+        -- Forwarding signals
+        fwd1 : in STD_LOGIC_VECTOR (1 downto 0);
+        fwd2 : in STD_LOGIC_VECTOR (1 downto 0);
+
+        pipe_mem_res : in STD_LOGIC_VECTOR (31 downto 0);
+        pipe_mem_pc_4 : in STD_LOGIC_VECTOR (31 downto 0);
+        wb_data : in STD_LOGIC_VECTOR (31 downto 0)
     );
 end alu;
 
@@ -71,7 +79,14 @@ begin
         op_sel => op_sel,
 
         op1 => op1,
-        op2 => op2
+        op2 => op2,
+
+        fwd1 => fwd1,
+        fwd2 => fwd2,
+
+        pipe_mem_res => pipe_mem_res,
+        pipe_mem_pc_4 => pipe_mem_pc_4,
+        wb_data => wb_data
     );
 
     -- Select ALU Operation

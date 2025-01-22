@@ -33,22 +33,20 @@ end program_counter;
 architecture Behavioral of program_counter is
     signal pc_internal : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 begin
+    pc <= pc_internal;
+    pc_4 <= std_logic_vector(unsigned(pc_internal) + 4);
 
-pc <= pc_internal;
-pc_4 <= std_logic_vector(unsigned(pc_internal) + 4);
-
--- Clocked process
-process(clk, res_n)
-begin
-    if res_n = '0' then
-        pc_internal <= (others => '0');
-    elsif rising_edge(clk) then
-        if (branch = '1') then
-            pc_internal <= set;
-        else
-            pc_internal <= pc_4;
+    -- Clocked process
+    process(clk, res_n)
+    begin
+        if res_n = '0' then
+            pc_internal <= (others => '0');
+        elsif rising_edge(clk) then
+            if (branch = '1') then
+                pc_internal <= set;
+            else
+                pc_internal <= pc_4;
+            end if;
         end if;
-    end if;
-end process;
-
+    end process;
 end Behavioral;

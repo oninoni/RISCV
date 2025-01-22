@@ -98,6 +98,8 @@ architecture Behavioral of cpu_pipelined is
     signal pipe_ex_pc : std_logic_vector(31 downto 0) := (others => '0');
     signal pipe_ex_pc_4 : std_logic_vector(31 downto 0) := (others => '0');
 
+    signal pipe_ex_rs1 : std_logic_vector(4 downto 0) := "00000";
+    signal pipe_ex_rs2 : std_logic_vector(4 downto 0) := "00000";
     signal pipe_ex_rd : std_logic_vector(4 downto 0) := "00000";
 
     signal pipe_ex_rd1 : std_logic_vector(31 downto 0) := (others => '0');
@@ -109,9 +111,13 @@ architecture Behavioral of cpu_pipelined is
     signal pipe_ex_mem_control : std_logic_vector(4 downto 0) := "00000";
     signal pipe_ex_wb_control : std_logic_vector(2 downto 0) := "000";
 
+    -- Forwarding signals
+    signal fwd1 : std_logic_vector(1 downto 0) := "00";
+    signal fwd2 : std_logic_vector(1 downto 0) := "00";
+
     -- All pipeline signals combined into one vector, so it can be attached to the pipeline register.
-    signal pipe_ex_in : std_logic_vector(181 downto 0) := (others => '0');
-    signal pipe_ex_out : std_logic_vector(181 downto 0) := (others => '0');
+    signal pipe_ex_in : std_logic_vector(191 downto 0) := (others => '0');
+    signal pipe_ex_out : std_logic_vector(191 downto 0) := (others => '0');
 
     -- ALU Signals
     signal res : std_logic_vector(31 downto 0) := (others => '0');
@@ -273,7 +279,7 @@ begin
     -- Pipeline Register: Instruction Decode -> Execution
     pipeline_register_ex: entity work.pipeline_register
     generic map (
-        WIDTH => pipe_id_pc'length + pipe_id_pc_4'length + rd'length + rd1'length + rd2'length + imm'length + ex_control'length + mem_control'length + wb_control'length
+        WIDTH => pipe_id_pc'length + pipe_id_pc_4'length + rs1'length + rs2'length + rd'length + rd1'length + rd2'length + imm'length + ex_control'length + mem_control'length + wb_control'length
     )
     port map (
         clk => clk,
@@ -283,10 +289,12 @@ begin
         out_data => pipe_ex_out
     );
 
-    pipe_ex_in <= pipe_id_pc & pipe_id_pc_4 & rd & rd1 & rd2 & imm & ex_control & mem_control & wb_control;
+    pipe_ex_in <= pipe_id_pc & pipe_id_pc_4 & rs1 & rs2 & rd & rd1 & rd2 & imm & ex_control & mem_control & wb_control;
 
-    pipe_ex_pc <= pipe_ex_out(181 downto 150);
-    pipe_ex_pc_4 <= pipe_ex_out(149 downto 118);
+    pipe_ex_pc <= pipe_ex_out(191 downto 160);
+    pipe_ex_pc_4 <= pipe_ex_out(159 downto 128);
+    pipe_ex_rs1 <= pipe_ex_out(127 downto 123);
+    pipe_ex_rs2 <= pipe_ex_out(122 downto 118);
     pipe_ex_rd <= pipe_ex_out(117 downto 113);
     pipe_ex_rd1 <= pipe_ex_out(112 downto 81);
     pipe_ex_rd2 <= pipe_ex_out(80 downto 49);
@@ -300,6 +308,26 @@ begin
     -- Stage 3: Execution
     -- The ALU calculates the result of the operation.
     -- The branch logic calculates the branch condition.
+
+    -- Forwarding Unit
+    fwd_unit: entity work.forwarding_unit
+    port map (
+        -- Stage 3: Execute
+        rs1 => pipe_ex_rs1,
+        rs2 => pipe_ex_rs2,
+
+        fwd1 => fwd1,
+        fwd2 => fwd2,
+
+        -- Stage 4: Memory
+        mem_reg_write => pipe_mem_wb_control(2),
+        mem_reg_wb_sel => pipe_mem_wb_control(1 downto 0),
+        mem_rd => pipe_mem_rd,
+
+        -- Stage 5: Write Back
+        wb_reg_write => pipe_wb_wb_control(2),
+        wb_rd => pipe_wb_rd
+    );
 
     -- ALU
     alu: entity work.alu
@@ -319,7 +347,15 @@ begin
         -- Compare Signals
         eq => eq,
         lt => lt,
-        ltu => ltu
+        ltu => ltu,
+
+        -- Forwarding signals
+        fwd1 => fwd1,
+        fwd2 => fwd2,
+
+        pipe_mem_res => pipe_mem_res,
+        pipe_mem_pc_4 => pipe_mem_pc_4,
+        wb_data => wb_data
     );
 
     -- Branch Logic
