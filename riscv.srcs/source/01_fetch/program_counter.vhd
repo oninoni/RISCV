@@ -21,6 +21,8 @@ entity program_counter is
         res_n : in STD_LOGIC;
 
         -- Stage 1: Instruction Fetch
+        stall : in STD_LOGIC;
+
         pc : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
         pc_4 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
@@ -42,10 +44,12 @@ begin
         if res_n = '0' then
             pc_internal <= (others => '0');
         elsif rising_edge(clk) then
-            if (branch = '1') then
-                pc_internal <= set;
-            else
-                pc_internal <= pc_4;
+            if (stall = '0') then
+                if (branch = '1') then
+                    pc_internal <= set;
+                else
+                    pc_internal <= pc_4;
+                end if;
             end if;
         end if;
     end process;

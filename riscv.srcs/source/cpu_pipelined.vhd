@@ -57,6 +57,8 @@ architecture Behavioral of cpu_pipelined is
     -- Stage 1: Instruction Fetch Signals
 
     -- Program Counter Signals
+    signal stall : std_logic := '0';
+
     signal pc : std_logic_vector(31 downto 0) := (others => '0');
     signal pc_4 : std_logic_vector(31 downto 0) := (others => '0');
 
@@ -124,7 +126,7 @@ architecture Behavioral of cpu_pipelined is
 
     -- ALU Compare Signals
     signal eq : std_logic := '0';
-    signal lt : std_logic := '0';
+    signal lt : std_logic :=stall '0';
     signal ltu : std_logic := '0';
 
     -- Branch Signals
@@ -183,6 +185,8 @@ begin
         res_n => res_n,
 
         -- Stage 1: Instruction Fetch
+        stall => stall,
+
         pc => pc,
         pc_4 => pc_4,
 
@@ -190,6 +194,8 @@ begin
         branch => branch,
         set => res
     );
+
+    -- Memory Controller can be found in stage 4!
 
     -- Pipeline Register: Instruction Fetch -> Instruction Decode
     pipeline_register_id: entity work.pipeline_register
@@ -199,6 +205,9 @@ begin
     port map (
         clk => clk,
         res_n => res_n,
+
+        stall => stall,
+        bubble => '0',
 
         in_data => pipe_id_in,
         out_data => pipe_id_out
@@ -284,6 +293,9 @@ begin
     port map (
         clk => clk,
         res_n => res_n,
+
+        stall => '0',
+        bubble => stall,
 
         in_data => pipe_ex_in,
         out_data => pipe_ex_out
@@ -379,6 +391,9 @@ begin
         clk => clk,
         res_n => res_n,
 
+        stall => '0',
+        bubble => '0',
+
         in_data => pipe_mem_in,
         out_data => pipe_mem_out
     );
@@ -436,6 +451,9 @@ begin
     port map (
         clk => clk,
         res_n => res_n,
+
+        stall => '0',
+        bubble => '0',
 
         in_data => pipe_wb_in,
         out_data => pipe_wb_out
